@@ -1,66 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EMOP — Egyptian Medical Observational Profile</title>
-  <meta name="description" content="EMOP is an Egyptian profile of the OMOP Common Data Model. Core tables keep OMOP 5.4 names. Extra tables cover Egyptian care.">
-  <link rel="stylesheet" href="/assets/site.css">
-  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMOP — Egyptian Medical Observational Profile</title>
+<meta name="description" content="EMOP is a relational data model for observational health records collected in Egypt: national identifiers, governorates, insurance schemes, referrals, and national code lists.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
 <body>
+
+<header class="site-header">
   <div class="wrap">
-    <header>
-      <a class="brand" href="/">CareNova</a>
-      <nav>
-        <a href="/">Home</a>
-        <a href="/emop/" aria-current="page">EMOP</a>
-        <a href="/coe/">COE</a>
-      </nav>
-    </header>
-
-    <p class="kicker">Data model · v0.1</p>
-    <h1>EMOP</h1>
-    <p class="ar-title" lang="ar" dir="rtl">النموذج المصري للبيانات الطبية الرصدية</p>
-    <p class="lede">An Egyptian profile of the Observational Medical Outcomes Partnership common data model. The core keeps OMOP 5.4 names. Egypt is modelled as extra tables, not as renamed OMOP tables.</p>
-
-    <div class="links">
-      <a href="https://github.com/gegesay89/emop">GitHub repository</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/tables.md">Table list</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/crosswalk-omop.md">Crosswalk to OMOP</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/LICENSE">Apache 2.0</a>
-    </div>
-
-    <div class="warn">
-      Example clinical and tariff codes in the repository use an <code>EX-</code> prefix. They are not official Ministry of Health, UHIA, or HIO codes. Governorate codes are ISO 3166-2:EG.
-    </div>
-
-    <h2>Core, unchanged</h2>
-    <p><code>PERSON</code>, <code>VISIT_OCCURRENCE</code>, <code>CONDITION_OCCURRENCE</code>, <code>DRUG_EXPOSURE</code>, and the rest of OMOP 5.4 sit in schema <code>emop</code> with their original columns. That layout is OHDSI’s, vendored under Apache 2.0.</p>
-
-    <h2>Egyptian tables</h2>
-    <table>
-      <thead>
-        <tr><th>Table</th><th>What it holds</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>governorate</code></td><td>27 governorates, Arabic and English, ISO codes</td></tr>
-        <tr><td><code>national_identifier</code></td><td>National ID, passport, military ID</td></tr>
-        <tr><td><code>facility_extension</code></td><td>Sector, Ministry facility code, teaching flag</td></tr>
-        <tr><td><code>insurance_scheme</code> / <code>person_insurance</code></td><td>UHIA, HIO, armed forces, police, private, out of pocket</td></tr>
-        <tr><td><code>care_sector</code> / <code>visit_care_context</code></td><td>Civil versus military care on the visit</td></tr>
-        <tr><td><code>referral</code></td><td>From facility, to facility, priority</td></tr>
-        <tr><td><code>person_name_bilingual</code></td><td>Arabic and English names</td></tr>
-        <tr><td><code>source_code</code></td><td>National codes mapped into <code>CONCEPT</code></td></tr>
-      </tbody>
-    </table>
-
-    <h2>Install</h2>
-    <p>PostgreSQL 14 or newer. Clone the repository and run <code>./ddl/install.sh</code>. Instructions and the Athena caveat are in the repository README.</p>
-
-    <footer>
-      <p>Gehad Sayed Ahmed. OMOP CDM copyright OHDSI. Egyptian extension tables copyright 2026 Gehad Sayed Ahmed.</p>
-    </footer>
+    <a class="brand" href="/">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#125c6b" stroke-width="1.6"/>
+        <path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#125c6b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Gehad Sayed Ahmed</span>
+    </a>
+    <nav class="site-nav">
+      <a href="/">Overview</a>
+      <a href="/emop/" aria-current="page">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89/emop">GitHub</a>
+    </nav>
   </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Data model · Version 0.1</span>
+    <h1>EMOP</h1>
+    <p>A relational data model for observational health records collected in Egypt. It extends an established international model with the facts Egyptian care actually records, and documents how to translate back for international research.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>At a glance</h2>
+    <dl class="meta">
+      <div>
+        <dt>Version</dt>
+        <dd>0.1.0</dd>
+      </div>
+      <div>
+        <dt>Database</dt>
+        <dd>PostgreSQL 14 or newer</dd>
+      </div>
+      <div>
+        <dt>Tables</dt>
+        <dd>39 international core, 13 Egyptian</dd>
+      </div>
+      <div>
+        <dt>License</dt>
+        <dd><a href="https://github.com/gegesay89/emop/blob/main/LICENSE">Apache License 2.0</a></dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Egyptian tables</h2>
+    <p class="lede">These sit alongside the international core rather than replacing any part of it, so nothing has to be squeezed into a field that was designed for another health system.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Table</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>governorate</code></td><td>The 27 governorates with ISO 3166-2 codes and regional grouping</td></tr>
+          <tr><td><code>national_identifier</code></td><td>National ID, passport, and other identifier types held for one person</td></tr>
+          <tr><td><code>facility_extension</code></td><td>Facility sector, ministry facility code, governorate, teaching status</td></tr>
+          <tr><td><code>insurance_scheme</code></td><td>Public, military, private, and out-of-pocket payers</td></tr>
+          <tr><td><code>person_insurance</code></td><td>Coverage periods per person and scheme</td></tr>
+          <tr><td><code>care_sector</code></td><td>Civil, military, police, and university care</td></tr>
+          <tr><td><code>referral</code></td><td>Referral between facilities with date, priority, and reason</td></tr>
+          <tr><td><code>visit_care_context</code></td><td>Sector, payer, and referral attached to a single visit</td></tr>
+          <tr><td><code>person_name_bilingual</code></td><td>Names recorded in both writing systems, with preferred language</td></tr>
+          <tr><td><code>source_vocabulary</code></td><td>Named national code systems and their official status</td></tr>
+          <tr><td><code>source_code</code></td><td>Codes within those systems</td></tr>
+          <tr><td><code>source_code_omop_map</code></td><td>Mapping from national codes to standard concepts</td></tr>
+          <tr><td><code>emop_cdm_source</code></td><td>Version metadata for the deployed model</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Example data</h2>
+    <div class="notice">
+      <strong>Illustrative codes only.</strong> Every invented clinical or tariff code in this release is prefixed <code>EX-</code> and flagged in the data. None of it comes from the Ministry of Health, the Universal Health Insurance Authority, or the Health Insurance Organization. Governorate codes are the ISO geographic standard, not a clinical terminology.
+    </div>
+    <h3>What ships</h3>
+    <ul class="plain">
+      <li>Complete schema definitions with primary keys, foreign keys, and indexes</li>
+      <li>Reference data for governorates, insurance schemes, and care sectors</li>
+      <li>Small example code lists with mappings to standard concepts</li>
+      <li>One fictional patient journey: primary care visit, referral, hospital visit, diagnosis, prescription</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Install</h2>
+    <pre><code>git clone https://github.com/gegesay89/emop.git
+cd emop
+createdb emop
+./ddl/install.sh postgres://localhost/emop
+psql postgres://localhost/emop -f vocabulary/load_examples.sql
+psql postgres://localhost/emop -f examples/toy_egypt.sql</code></pre>
+    <p class="muted">This produces 52 tables and 194 foreign keys. Applying the international foreign-key and index files is covered in the repository, including the order to follow when loading a full standard vocabulary.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Documentation</h2>
+    <div class="linkrow">
+      <a href="https://github.com/gegesay89/emop">Repository</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/overview.md">Design overview</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/tables.md">Table reference</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/crosswalk-omop.md">Translation for international research</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/fhir-mapping.md">Interoperability mapping</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/CITATION.cff">How to cite</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0 · Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+
 </body>
 </html>

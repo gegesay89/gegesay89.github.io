@@ -1,49 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CareNova — EMOP and COE</title>
-  <meta name="description" content="CareNova publishes EMOP, an Egyptian profile of the OMOP common data model, and COE, a corpus ontology enricher.">
-  <link rel="stylesheet" href="/assets/site.css">
-  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gehad Sayed Ahmed — Health data standards and clinical text tooling</title>
+<meta name="description" content="Open-source health data standards and clinical text tooling: EMOP, a data model for Egyptian observational health records, and COE, a corpus ontology enricher.">
+<link rel="canonical" href="https://gegesay89.github.io/">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
 <body>
+
+<header class="site-header">
   <div class="wrap">
-    <header>
-      <a class="brand" href="/">CareNova</a>
-      <nav>
-        <a href="/" aria-current="page">Home</a>
-        <a href="/emop/">EMOP</a>
-        <a href="/coe/">COE</a>
-      </nav>
-    </header>
-
-    <p class="kicker">Public work</p>
-    <h1>Egyptian health data standards, published in the open.</h1>
-    <p class="ar-title" lang="ar" dir="rtl">معايير البيانات الصحية المصرية</p>
-    <p class="lede">Two public artefacts. EMOP is a data model for observational records collected in Egypt. COE is a tool that reads clinical text against pinned terminologies. Both live on GitHub under Gehad Sayed Ahmed.</p>
-
-    <hr class="rule">
-
-    <div class="cards">
-      <article class="card">
-        <h2>EMOP</h2>
-        <p lang="ar" dir="rtl">النموذج المصري للبيانات الطبية الرصدية</p>
-        <p>OMOP table names, plus Egyptian tables for national ID, governorates, UHIA and HIO, civil and military care, referrals, and bilingual names.</p>
-        <a href="/emop/">EMOP documentation</a>
-      </article>
-      <article class="card">
-        <h2>COE</h2>
-        <p>Corpus Ontology Enricher</p>
-        <p>Offline phrase-to-code analysis with mention context, a synthetic demo, and a hard split between public code and licensed terminology indexes.</p>
-        <a href="/coe/">COE documentation</a>
-      </article>
-    </div>
-
-    <footer>
-      <p>Gehad Sayed Ahmed. Apache License 2.0. OMOP CDM is an OHDSI specification; EMOP extends it and does not replace it.</p>
-    </footer>
+    <a class="brand" href="/">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#125c6b" stroke-width="1.6"/>
+        <path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#125c6b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Gehad Sayed Ahmed</span>
+    </a>
+    <nav class="site-nav">
+      <a href="/" aria-current="page">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
   </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Open source</span>
+    <h1>Health data standards and clinical text tooling.</h1>
+    <p>Two projects, published openly under the Apache License 2.0: a data model for observational health records collected in Egypt, and a deterministic tool for analysing clinical text against controlled terminologies.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Projects</h2>
+    <div class="projects">
+
+      <article class="project">
+        <h2>EMOP</h2>
+        <p class="role">Egyptian Medical Observational Profile</p>
+        <p class="desc">A relational data model for observational health records in Egypt. Covers national identifiers, the 27 governorates, public and military insurance schemes, referrals between facilities, and national code lists mapped to standard concepts.</p>
+        <div class="actions">
+          <a href="/emop/">Documentation</a>
+          <a href="https://github.com/gegesay89/emop">Repository</a>
+        </div>
+      </article>
+
+      <article class="project">
+        <h2>COE</h2>
+        <p class="role">Corpus Ontology Enricher</p>
+        <p class="desc">An offline system that matches phrases in clinical text to pinned terminology releases and reports coding frequency, mention context, unmapped candidate terms, and code co-occurrence — with privacy controls applied before anything leaves the process.</p>
+        <div class="actions">
+          <a href="/coe/">Documentation</a>
+          <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher">Repository</a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Approach</h2>
+    <dl class="meta">
+      <div>
+        <dt>Standards first</dt>
+        <dd>Both projects build on established specifications rather than replacing them, and document exactly where they diverge.</dd>
+      </div>
+      <div>
+        <dt>Explicit provenance</dt>
+        <dd>Every code carries its source and status. Illustrative data is labelled as such and never presented as an official release.</dd>
+      </div>
+      <div>
+        <dt>Reproducible</dt>
+        <dd>Deterministic, offline execution. Schema and analysis outputs can be rebuilt from pinned inputs.</dd>
+      </div>
+      <div>
+        <dt>Privacy by construction</dt>
+        <dd>No patient data in either repository. Licensed terminology payloads are kept out of public source control.</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0 · <a href="https://github.com/gegesay89">github.com/gegesay89</a></p>
+  </div>
+</footer>
+
 </body>
 </html>
