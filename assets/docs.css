@@ -61,6 +61,8 @@ a:hover { text-decoration: underline; }
   gap: 1rem;
 }
 
+body.landing .topbar-inner { max-width: 62rem; }
+
 .wordmark {
   display: flex;
   align-items: center;
@@ -99,8 +101,7 @@ a:hover { text-decoration: underline; }
 }
 
 .shell.no-toc { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
-.shell.plain { display: block; max-width: 84rem; }
-.shell.plain .measure { max-width: 62rem; }
+.shell.plain { display: block; max-width: 62rem; }
 
 /* ---------- Sidebar ---------- */
 
@@ -197,7 +198,7 @@ main .standfirst {
   font-size: 1.1rem;
   color: var(--ink-mid);
   line-height: 1.62;
-  max-width: 44rem;
+  max-width: 38rem;
 }
 
 main h2 {
@@ -222,8 +223,8 @@ main h4 {
   color: var(--ink-mid);
 }
 
-main p { margin: 0 0 1.05rem; max-width: 40rem; }
-main ul, main ol { margin: 0 0 1.15rem; padding-left: 1.3rem; max-width: 40rem; }
+main p { margin: 0 0 1.05rem; max-width: 36rem; }
+main ul, main ol { margin: 0 0 1.15rem; padding-left: 1.3rem; max-width: 36rem; }
 main li { margin-bottom: 0.4rem; }
 main li > ul { margin-top: 0.4rem; margin-bottom: 0.2rem; }
 
@@ -336,7 +337,9 @@ table.cols { table-layout: fixed; }
 table.cols th:nth-child(1), table.cols td:nth-child(1) { width: 32%; }
 table.cols th:nth-child(2), table.cols td:nth-child(2) { width: 18%; }
 table.cols th:nth-child(3), table.cols td:nth-child(3) { width: 50%; }
-table.cols td:nth-child(1) code { white-space: normal; word-break: break-word; }
+/* Fixed layout clips rather than reflows, so cell content must wrap. */
+table.cols td { overflow-wrap: break-word; word-break: break-word; }
+table.cols td code { white-space: normal; overflow-wrap: break-word; word-break: break-word; }
 
 /* ---------- Callouts ---------- */
 
@@ -549,6 +552,10 @@ table.cols td:nth-child(1) code { white-space: normal; word-break: break-word; }
 }
 .foot p { margin: 0; }
 
+/* Landing pages centre their content in a narrower measure; keep the footer
+   aligned with it rather than with the full shell. */
+body.landing .foot-inner { max-width: 62rem; }
+
 /* ---------- Responsive ---------- */
 
 /* Toggle is only shown on narrow screens. */
@@ -610,11 +617,15 @@ table.cols td:nth-child(1) code { white-space: normal; word-break: break-word; }
   .nav-group { margin-bottom: 1.15rem; }
   .nav-group:last-child { margin-bottom: 0; }
   .nav-group a {
-    padding: 0.55rem 0.7rem;   /* 44px tap target */
+    padding: 0.65rem 0.7rem;   /* >=44px tap target */
     border-left: 0;
     border-radius: 6px;
   }
   .nav-group a[aria-current="page"] { border-left: 0; }
+
+  /* Fixed-layout reference tables need real width; let them scroll rather
+     than crush three columns into 340px. The wrapper shows a fade cue. */
+  table.cols { min-width: 30rem; }
 
   main { padding-top: 0; }
   main h1 { font-size: 1.8rem; }

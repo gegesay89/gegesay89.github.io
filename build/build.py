@@ -154,7 +154,10 @@ def footer(extra: str) -> str:
 </footer>"""
 
 
-def page_shell(*, title: str, description: str, canonical: str, active: str, body: str, foot: str) -> str:
+def page_shell(
+    *, title: str, description: str, canonical: str, active: str, body: str, foot: str, landing: bool = False
+) -> str:
+    body_class = ' class="landing"' if landing else ""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,7 +169,7 @@ def page_shell(*, title: str, description: str, canonical: str, active: str, bod
 <link rel="stylesheet" href="/assets/docs.css">
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
-<body>
+<body{body_class}>
 {topbar(active)}
 {body}
 {foot}
@@ -228,7 +231,6 @@ def build_doc_pages() -> list[pathlib.Path]:
 HOME_BODY = """
 <div class="shell plain">
   <div class="masthead">
-    <div class="measure">
       <span class="eyebrow">Open source</span>
       <h1>Health data standards and clinical text tooling.</h1>
       <p>Two independent projects, documented in full and published under the Apache License 2.0:
@@ -236,7 +238,6 @@ HOME_BODY = """
       deterministic system for analysing clinical text against controlled terminologies.</p>
       <a class="cta" href="/emop/">Read the EMOP documentation</a>
       <a class="cta ghost" href="/coe/">Read the COE documentation</a>
-    </div>
   </div>
 
   <section class="band">
@@ -296,14 +297,12 @@ HOME_BODY = """
 NOT_FOUND_BODY = """
 <div class="shell plain">
   <div class="masthead">
-    <div class="measure">
       <span class="eyebrow">Error 404</span>
       <h1>That page does not exist.</h1>
       <p>The address may be mistyped, or the page may have moved. The two documentation
       sections below are the best place to start.</p>
       <a class="cta" href="/emop/">EMOP documentation</a>
       <a class="cta ghost" href="/coe/">COE documentation</a>
-    </div>
   </div>
 </div>
 """
@@ -324,6 +323,7 @@ def build_static() -> list[pathlib.Path]:
                 active="home",
                 body=HOME_BODY,
                 foot=footer('Apache License 2.0 · <a href="https://github.com/gegesay89">github.com/gegesay89</a>'),
+                landing=True,
             ),
         )
     ]
@@ -334,6 +334,7 @@ def build_static() -> list[pathlib.Path]:
         active="home",
         body=NOT_FOUND_BODY,
         foot=footer("Apache License 2.0"),
+        landing=True,
     )
     (ROOT / "404.html").write_text(not_found, encoding="utf-8")
     written.append(ROOT / "404.html")

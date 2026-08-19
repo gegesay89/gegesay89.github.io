@@ -25,59 +25,60 @@
     sidebar.insertBefore(toggle, groups);
   }
 
-  // 2. Mark the section currently in view in the on-page contents.
+  // 2. Mark the section currently being read in the on-page contents.
+  //
+  // Driven by scroll position rather than intersection: these sections are far
+  // taller than the viewport, so an observer-only approach leaves the highlight
+  // frozen for long stretches where no heading enters or leaves the detection
+  // band. Reading position is simply the last heading scrolled past.
   var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
-  if (!links.length || !("IntersectionObserver" in window)) return;
+  if (!links.length) return;
 
-  var byId = {};
-  var headings = [];
+  var entries = [];
   links.forEach(function (link) {
-    var id = decodeURIComponent(link.hash.slice(1));
-    var heading = document.getElementById(id);
-    if (heading) {
-      byId[id] = link;
-      headings.push(heading);
-    }
+    var heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+    if (heading) entries.push({ link: link, heading: heading });
   });
-  if (!headings.length) return;
+  if (!entries.length) return;
 
-  var visible = [];
+  var active = null;
 
   function paint() {
-    var id = visible.length
-      ? visible[0]
-      : (function () {
-          // Nothing intersecting: fall back to the last heading scrolled past.
-          var above = headings.filter(function (h) {
-            return h.getBoundingClientRect().top < 100;
-          });
-          return above.length ? above[above.length - 1].id : headings[0].id;
-        })();
+    // A heading counts as current once its top passes just below the header.
+    var line = 96;
+    var found = entries[0];
 
-    links.forEach(function (link) {
-      link.classList.remove("active");
-    });
-    if (byId[id]) byId[id].classList.add("active");
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].heading.getBoundingClientRect().top <= line) {
+        found = entries[i];
+      } else {
+        break;
+      }
+    }
+
+    // At the very bottom, prefer the last section: its heading may sit above
+    // the line while the page can scroll no further.
+    var atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 2;
+    if (atBottom) found = entries[entries.length - 1];
+
+    if (found.link === active) return;
+    if (active) active.classList.remove("active");
+    found.link.classList.add("active");
+    active = found.link;
   }
 
-  var observer = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        var id = entry.target.id;
-        var at = visible.indexOf(id);
-        if (entry.isIntersecting && at === -1) visible.push(id);
-        if (!entry.isIntersecting && at !== -1) visible.splice(at, 1);
-      });
-      visible.sort(function (a, b) {
-        return headings.indexOf(document.getElementById(a)) - headings.indexOf(document.getElementById(b));
-      });
+  var queued = false;
+  function onScroll() {
+    if (queued) return;
+    queued = true;
+    window.requestAnimationFrame(function () {
+      queued = false;
       paint();
-    },
-    { rootMargin: "-88px 0px -70% 0px" }
-  );
+    });
+  }
 
-  headings.forEach(function (heading) {
-    observer.observe(heading);
-  });
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+  window.addEventListener("hashchange", onScroll);
   paint();
 })();
