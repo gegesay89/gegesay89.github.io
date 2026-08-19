@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickstart — COE</title>
+<meta name="description" content="Install COE and run the synthetic slice end to end, with no patient data and no licensed terminology files.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/quickstart/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/" aria-current="page">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Quickstart</nav><h1>Quickstart</h1><p class="standfirst">The synthetic profile runs end to end with no patient data and no licensed terminology files. It is the intended way to evaluate COE.</p><h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
+
+<ul>
+  <li>Python 3.11 or newer</li>
+  <li><a href="https://docs.astral.sh/uv/">uv</a> for development commands</li>
+  <li>No network access needed after install, and none used at runtime</li>
+</ul>
+
+<h2 id="install-and-test">Install and test<a class="anchor" href="#install-and-test" aria-label="Link to this section">#</a></h2>
+
+<pre><code>git clone https://github.com/gegesay89/coe-corpus-ontology-enricher.git
+cd coe-corpus-ontology-enricher
+uv sync --extra dev
+uv run ruff format --check .
+uv run ruff check .
+uv run pytest</code></pre>
+
+<p>The suite covers context qualification, matching variants, curation chaining, the privacy
+floor, export shapes, and an end-to-end grounding smoke test. One Windows-specific test skips
+where no PowerShell parser is available.</p>
+
+<h2 id="run-the-synthetic-slice">Run the synthetic slice<a class="anchor" href="#run-the-synthetic-slice" aria-label="Link to this section">#</a></h2>
+
+<pre><code>uv run coe demo create demo
+uv run coe preflight snapshot demo/snapshot
+uv run coe preflight reference demo/reference --environment synthetic
+uv run coe run \
+  --snapshot demo/snapshot \
+  --reference demo/reference \
+  --config demo/coe_config.json \
+  --curation-snapshot genesis-v0 \
+  --output out</code></pre>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Command</th><th>Does</th></tr></thead>
+  <tbody>
+    <tr><td><code>demo create</code></td><td>Writes a synthetic snapshot, reference set, and configuration</td></tr>
+    <tr><td><code>preflight snapshot</code></td><td>Validates the input contract without analysing anything</td></tr>
+    <tr><td><code>preflight reference</code></td><td>Validates the reference set for the synthetic environment</td></tr>
+    <tr><td><code>run</code></td><td>Executes the deterministic slice into <code>out/</code></td></tr>
+  </tbody>
+</table></div>
+
+<p>Preflight exists so a contract problem is reported before any analysis begins, rather than
+surfacing halfway through a long run.</p>
+
+<h2 id="check-the-capability-report">Check the capability report<a class="anchor" href="#check-the-capability-report" aria-label="Link to this section">#</a></h2>
+
+<pre><code>uv run coe hardware probe</code></pre>
+
+<p>Emits a sanitised runtime capability report — deliberately free of hostnames, usernames, and
+paths, so it can be attached to a support request. Exact phrase mining and dictionary lookup run
+on the processor by design; passing <code>--require-nvidia</code> fails closed if a graphics card
+cannot be confirmed, rather than silently continuing.</p>
+
+<p>The synthetic profile demonstrates the full pipeline without patient data. Its outputs are
+described on the <a href="/coe/outputs/">outputs</a> page.</p>
+
+<h2 id="reproducibility">Reproducibility<a class="anchor" href="#reproducibility" aria-label="Link to this section">#</a></h2>
+
+<p>Run the slice twice into different directories and the analytical outputs match, because
+there is no model, no network, and no clock-dependent behaviour. This is the property the
+synthetic profile exists to protect: a change in output means a change in code or inputs, never
+noise.</p>
+
+<h2 id="what-comes-next">What comes next<a class="anchor" href="#what-comes-next" aria-label="Link to this section">#</a></h2>
+
+<p>Two things separate the demo from real use, and both are deliberate gates:</p>
+
+<ul>
+  <li><strong>A reference set</strong> built from licensed terminology files on an entitled
+  machine, under a recorded entitlement assertion.</li>
+  <li><strong>An attestation</strong> naming the approval, retention policy, and output
+  classification for the corpus — see <a href="/coe/privacy/">privacy controls</a>.</li>
+</ul>
+
+<div class="note">
+  <span class="label">Not included</span>
+  <p>This repository contains no terminology release and no patient data. The demo is entirely
+  synthetic, which is why it can be public.</p>
+</div><nav class="pager"><a class="prev" href="/coe/outputs/"><span class="dir">Previous</span><span class="ttl">Outputs</span></a><a class="next" href="/coe/privacy/"><span class="dir">Next</span><span class="ttl">Privacy controls</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#install-and-test">Install and test</a></li>
+<li><a href="#run-the-synthetic-slice">Run the synthetic slice</a></li>
+<li><a href="#check-the-capability-report">Check the capability report</a></li>
+<li><a href="#reproducibility">Reproducibility</a></li>
+<li><a href="#what-comes-next">What comes next</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>

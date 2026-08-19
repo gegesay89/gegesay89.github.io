@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command reference — COE</title>
+<meta name="description" content="Every COE command group and subcommand, with the arguments each takes.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/cli/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/" aria-current="page">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Command reference</nav><h1>Command reference</h1><p class="standfirst">Nine command groups. Every command is offline, and every command that writes does so atomically.</p><pre><code>coe [-h] [--version]
+    {demo,preflight,run,curation,export,benchmark,reference,protected,hardware}</code></pre>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Group</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>demo</code></td><td>Manage deterministic synthetic inputs</td></tr>
+    <tr><td><code>preflight</code></td><td>Validate input contracts without analysis</td></tr>
+    <tr><td><code>run</code></td><td>Run the synthetic deterministic slice</td></tr>
+    <tr><td><code>curation</code></td><td>Record and snapshot hash-chained decisions</td></tr>
+    <tr><td><code>export</code></td><td>Project run output into interchange formats</td></tr>
+    <tr><td><code>benchmark</code></td><td>Bounded, non-semantic performance checks</td></tr>
+    <tr><td><code>reference</code></td><td>Manage private licensed reference indexes</td></tr>
+    <tr><td><code>protected</code></td><td>Aggregate-only analysis on approved local text</td></tr>
+    <tr><td><code>hardware</code></td><td>Emit a sanitised runtime capability report</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="demo">demo<a class="anchor" href="#demo" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe demo create &lt;path&gt;</code></pre>
+
+<p>Creates a synthetic snapshot, reference set, and configuration. No patient data.</p>
+
+<h2 id="preflight">preflight<a class="anchor" href="#preflight" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe preflight {snapshot,reference,config,all} &lt;path&gt; [--environment ENV]</code></pre>
+
+<p>Validates an input contract and stops. Use it before a long run so a contract error surfaces
+immediately.</p>
+
+<h2 id="run">run<a class="anchor" href="#run" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe run --snapshot SNAPSHOT --reference REFERENCE --config CONFIG
+        --curation-snapshot CURATION_SNAPSHOT
+        [--curation-decisions DECISIONS]
+        --output OUTPUT [--overwrite]</code></pre>
+
+<p>A curation snapshot is required, not optional — a run must always state which decisions were
+in force, even if that is the genesis snapshot with none.</p>
+
+<h2 id="curation">curation<a class="anchor" href="#curation" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe curation decide   --decisions FILE --form FORM --system SYSTEM
+                      --release RELEASE --code CODE
+                      --decision {accepted,rejected} --curator NAME
+
+coe curation snapshot --decisions FILE --id ID --scope SCOPE --output FILE</code></pre>
+
+<p>See <a href="/coe/curation/">curation</a> for the chaining model.</p>
+
+<h2 id="reference">reference<a class="anchor" href="#reference" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe reference build-index   <span class="c">-- build one pinned terminology index</span>
+coe reference verify-index  <span class="c">-- verify one immutable index</span>
+coe reference build-set     <span class="c">-- atomically build every pinned terminology</span>
+coe reference verify-set    <span class="c">-- verify a complete index set</span></code></pre>
+
+<p>Building a set is atomic and does not copy raw publisher packages, normalised source files,
+access logs, or credentials into the result:</p>
+
+<pre><code>coe reference build-set \
+  --source-dir /approved/path/to/normalized \
+  --spec specs/licensed_terminologies.json \
+  --entitlement governance/terminology_entitlement_assertion.json \
+  --output private_build/references
+
+coe reference verify-set private_build/references</code></pre>
+
+<p>The committed specification pins each release by file name, byte count, row count, checksum,
+canonical system identifier, version, effective date, code format, alias policy, and active-status
+rule.</p>
+
+<h2 id="protected">protected<a class="anchor" href="#protected" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe protected run    --corpus DIR --attestation FILE
+                     --index INDEX [--index INDEX ...]
+                     --output DIR
+                     [--min-cell-document-count N]
+                     [--max-association-codes-per-document N]
+
+coe protected verify --output DIR --index INDEX [--index INDEX ...]</code></pre>
+
+<p>Between one and seven releases are accepted. Verification requires exactly the releases the run
+was bound to. See <a href="/coe/privacy/">privacy controls</a>.</p>
+
+<h2 id="export">export<a class="anchor" href="#export" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe export csv  --run RUN --output DIR
+coe export skos --run RUN --output FILE.ttl</code></pre>
+
+<p>Neither adds a runtime dependency. An export inherits the classification of its source run.</p>
+
+<h2 id="hardware">hardware<a class="anchor" href="#hardware" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe hardware probe [--require-nvidia]</code></pre>
+
+<p>Sanitised capability report. With the flag, fails closed when a graphics card cannot be
+confirmed rather than silently falling back.</p>
+
+<h2 id="default-limits">Default limits<a class="anchor" href="#default-limits" aria-label="Link to this section">#</a></h2>
+
+<p>Applied by the protected runner unless overridden:</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Limit</th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td>Files</td><td>10,000</td></tr>
+    <tr><td>Total input bytes</td><td>100,000,000</td></tr>
+    <tr><td>Bytes per file</td><td>10,000,000</td></tr>
+    <tr><td>Tokens per file</td><td>250,000</td></tr>
+    <tr><td>Phrase length</td><td>4 tokens</td></tr>
+    <tr><td>Suppression floor</td><td>3 documents</td></tr>
+    <tr><td>Candidate terms reported</td><td>5,000</td></tr>
+    <tr><td>Codes per document for associations</td><td>150</td></tr>
+  </tbody>
+</table></div>
+
+<p>These make the tool a bounded qualification slice rather than a full-corpus engine. Raising
+them is not the way to process a larger corpus; a tested partition and checkpoint design is.</p><nav class="pager"><a class="prev" href="/coe/curation/"><span class="dir">Previous</span><span class="ttl">Curation</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#demo">demo</a></li>
+<li><a href="#preflight">preflight</a></li>
+<li><a href="#run">run</a></li>
+<li><a href="#curation">curation</a></li>
+<li><a href="#reference">reference</a></li>
+<li><a href="#protected">protected</a></li>
+<li><a href="#export">export</a></li>
+<li><a href="#hardware">hardware</a></li>
+<li><a href="#default-limits">Default limits</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>

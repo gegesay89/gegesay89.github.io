@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phrase matching — COE</title>
+<meta name="description" content="How COE resolves a phrase to a code: exact-first, deterministic variants only, and no fabricated codes.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/matching/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/" aria-current="page">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Phrase matching</nav><h1>Phrase matching</h1><p class="standfirst">Exact matching first, then a small set of deterministic variants. A variant adds a dictionary lookup; it never invents a code that is absent from the pinned release.</p><h2 id="the-guarantee">The guarantee<a class="anchor" href="#the-guarantee" aria-label="Link to this section">#</a></h2>
+
+<p>Every code in the output exists in the terminology release the output names. This is the
+property the whole design protects, and verification re-checks it independently against the same
+releases afterwards.</p>
+
+<p>The distinction that matters: a variant changes <em>what is looked up</em>, never
+<em>what may be returned</em>. Expanding an abbreviation produces another dictionary query; if
+that query finds nothing, nothing is emitted.</p>
+
+<h2 id="resolution-order">Resolution order<a class="anchor" href="#resolution-order" aria-label="Link to this section">#</a></h2>
+
+<ol>
+  <li><strong>Exact.</strong> The phrase as written, case-folded, against preferred terms and
+  aliases.</li>
+  <li><strong>Punctuation-compacted.</strong> Handles differences in hyphenation and spacing
+  between text and terminology.</li>
+  <li><strong>Curated abbreviation.</strong> A closed, hand-checked map of unambiguous clinical
+  abbreviations — for example an abbreviation for hypertension resolving to a release's
+  hypertension designation.</li>
+  <li><strong>Conservative singularisation.</strong> Plural to singular, only where the
+  transformation is unambiguous.</li>
+</ol>
+
+<p>Each attempt records how the match was made, so an output row states not just which code was
+matched but by what route:</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>match_method</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>exact</code></td><td>Matched a preferred term directly</td></tr>
+    <tr><td><code>exact_alias</code></td><td>Matched a published alias or synonym</td></tr>
+    <tr><td><code>variant_abbreviation</code></td><td>Matched after expanding a curated abbreviation</td></tr>
+  </tbody>
+</table></div>
+
+<p>This makes the aggressiveness of matching auditable. If a reviewer distrusts abbreviation
+expansion, those rows can be isolated and inspected rather than taken on trust.</p>
+
+<h2 id="the-abbreviation-map-is-closed">The abbreviation map is closed<a class="anchor" href="#the-abbreviation-map-is-closed" aria-label="Link to this section">#</a></h2>
+
+<p>Abbreviations are only expanded where the expansion is unambiguous in clinical text, and the
+map is curated by hand. This is intentionally restrictive: many clinical abbreviations are
+genuinely ambiguous, and guessing between meanings would produce confident, wrong codes. An
+ambiguous abbreviation is better left unmatched, where it surfaces as a candidate term for
+review.</p>
+
+<h2 id="ambiguity-is-reported-not-resolved">Ambiguity is reported, not resolved<a class="anchor" href="#ambiguity-is-reported-not-resolved" aria-label="Link to this section">#</a></h2>
+
+<p>When a phrase resolves to more than one code within a single system, COE does not choose. The
+mention is recorded in the ambiguity counts for that system and excluded from the coding counts,
+so an ambiguous phrase never inflates the count of one arbitrary winner.</p>
+
+<p>Ambiguity counts are a useful signal in themselves: a phrase that is persistently ambiguous
+is a candidate for a local curation decision.</p>
+
+<h2 id="sentence-and-phrase-boundaries">Sentence and phrase boundaries<a class="anchor" href="#sentence-and-phrase-boundaries" aria-label="Link to this section">#</a></h2>
+
+<p>Clinical text is frequently hard-wrapped at a fixed column, which naive sentence splitting
+mistakes for sentence ends and thereby destroys phrases spanning the break. COE treats a single
+newline as soft. Blank lines, terminal punctuation, and bullet lines split.</p>
+
+<p>Phrases are enumerated up to four tokens, which covers most multi-word clinical terms while
+keeping the candidate set bounded.</p>
+
+<h2 id="unmapped-terms">Unmapped terms<a class="anchor" href="#unmapped-terms" aria-label="Link to this section">#</a></h2>
+
+<p>Frequent phrases that resolve to nothing are ranked by salience — frequency weighted against
+how distinctive the term is across documents — and reported as candidate terms with their
+affirmed-mention count.</p>
+
+<p>Verification asserts that no reported candidate term is in fact groundable in the supplied
+releases. If a term could have been matched, its presence in the candidate list is a defect, and
+verification fails rather than letting a false gap stand.</p>
+
+<div class="note">
+  <span class="label">No embedding stage</span>
+  <p>There is no semantic or vector matching. A term that means the same thing in different
+  words will not be matched, and will appear as a candidate. That is the intended behaviour: a
+  human decides whether it is a synonym, and the decision is recorded.</p>
+</div><nav class="pager"><a class="prev" href="/coe/mention-context/"><span class="dir">Previous</span><span class="ttl">Mention context</span></a><a class="next" href="/coe/outputs/"><span class="dir">Next</span><span class="ttl">Outputs</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#the-guarantee">The guarantee</a></li>
+<li><a href="#resolution-order">Resolution order</a></li>
+<li><a href="#the-abbreviation-map-is-closed">The abbreviation map is closed</a></li>
+<li><a href="#ambiguity-is-reported-not-resolved">Ambiguity is reported, not resolved</a></li>
+<li><a href="#sentence-and-phrase-boundaries">Sentence and phrase boundaries</a></li>
+<li><a href="#unmapped-terms">Unmapped terms</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>

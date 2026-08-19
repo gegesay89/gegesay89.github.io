@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Egyptian extension tables — EMOP</title>
+<meta name="description" content="Column-level reference for the thirteen Egyptian tables: identity, geography, facilities, insurance, care sector, referral, bilingual names, and national codes.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/extension/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/" aria-current="page">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Egyptian tables</nav><h1>Egyptian extension tables</h1><p class="standfirst">Thirteen tables, grouped by the question each one answers. Every column is listed with its type and its meaning; every foreign key names the table it points at.</p><p>All thirteen live in schema <code>emop</code> beside the core tables and are created by
+<code>ddl/emop_extension.sql</code>. Apply that file after the core schema and its primary
+keys, since several of these tables reference core tables.</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Group</th><th>Tables</th></tr></thead>
+  <tbody>
+    <tr><td>Identity</td><td><code>national_identifier</code>, <code>person_name_bilingual</code></td></tr>
+    <tr><td>Geography and facilities</td><td><code>governorate</code>, <code>facility_extension</code></td></tr>
+    <tr><td>Payment</td><td><code>insurance_scheme</code>, <code>person_insurance</code></td></tr>
+    <tr><td>Care delivery</td><td><code>care_sector</code>, <code>referral</code>, <code>visit_care_context</code></td></tr>
+    <tr><td>Terminology</td><td><code>source_vocabulary</code>, <code>source_code</code>, <code>source_code_omop_map</code></td></tr>
+    <tr><td>Metadata</td><td><code>emop_cdm_source</code></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="identity">Identity<a class="anchor" href="#identity" aria-label="Link to this section">#</a></h2>
+
+<h3>national_identifier</h3>
+
+<p>One row per identifier held by a person, so a patient with a national identity number and
+a passport has two rows rather than one overloaded field.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>national_identifier_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>person_id</code></td><td>integer</td><td>References <code>person</code>, required</td></tr>
+    <tr><td><code>identifier_type</code></td><td>varchar(64)</td><td><code>national_id</code>, <code>passport</code>, <code>military_id</code>, <code>refugee</code></td></tr>
+    <tr><td><code>identifier_type_concept_id</code></td><td>integer</td><td>Optional concept for the type</td></tr>
+    <tr><td><code>identifier_source_value</code></td><td>varchar(128)</td><td>The identifier as recorded</td></tr>
+    <tr><td><code>valid_start_date</code></td><td>date</td><td>Required</td></tr>
+    <tr><td><code>valid_end_date</code></td><td>date</td><td>Null while current</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Defaults true; public rows are fictional</td></tr>
+  </tbody>
+</table></div>
+
+<div class="caution">
+  <span class="label">Handling</span>
+  <p>This table is the most sensitive in the schema. A national identity number identifies a
+  person directly and outlives any episode of care. Exclude it from research extracts and
+  from anything leaving the source institution — the
+  <a href="/emop/crosswalk/">translation rules</a> drop it by default.</p>
+</div>
+
+<h3>person_name_bilingual</h3>
+
+<p>One optional row per person. The international core has no name columns by design; this
+table exists for operational systems that must reproduce a legal name.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>person_id</code></td><td>integer</td><td>Primary key, references <code>person</code></td></tr>
+    <tr><td><code>given_name_en</code>, <code>family_name_en</code></td><td>varchar(255)</td><td>Latin script</td></tr>
+    <tr><td><code>given_name_ar</code>, <code>family_name_ar</code></td><td>varchar(255)</td><td>Arabic script</td></tr>
+    <tr><td><code>preferred_language</code></td><td>varchar(8)</td><td><code>ar</code> or <code>en</code>; defaults <code>ar</code></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="geography-and-facilities">Geography and facilities<a class="anchor" href="#geography-and-facilities" aria-label="Link to this section">#</a></h2>
+
+<h3>governorate</h3>
+
+<p>All twenty-seven governorates, each with both name forms, an international subdivision
+code, and a regional grouping for aggregate reporting.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>governorate_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>governorate_code</code></td><td>varchar(16)</td><td>Short code, unique</td></tr>
+    <tr><td><code>governorate_name_en</code>, <code>governorate_name_ar</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>region_name_en</code>, <code>region_name_ar</code></td><td>varchar(255)</td><td>Greater Cairo, Delta, Canal, Sinai, Upper Egypt, Frontier</td></tr>
+    <tr><td><code>location_id</code></td><td>integer</td><td>Optional link to core <code>location</code></td></tr>
+    <tr><td><code>iso_3166_2</code></td><td>varchar(16)</td><td>For example <code>EG-C</code></td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>False — these codes are published</td></tr>
+  </tbody>
+</table></div>
+
+<h3>facility_extension</h3>
+
+<p>One optional row per <code>care_site</code>, sharing its primary key. Sector is the column
+that matters most analytically, because funding and referral behaviour differ sharply between
+sectors.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>care_site_id</code></td><td>integer</td><td>Primary key and foreign key to <code>care_site</code></td></tr>
+    <tr><td><code>moh_facility_code</code></td><td>varchar(64)</td><td>Ministry facility code; illustrative in this release</td></tr>
+    <tr><td><code>facility_sector</code></td><td>varchar(32)</td><td><code>public</code>, <code>private</code>, <code>university</code>, <code>military</code>, <code>ngo</code>, <code>police</code></td></tr>
+    <tr><td><code>governorate_id</code></td><td>integer</td><td>References <code>governorate</code></td></tr>
+    <tr><td><code>urban_rural</code></td><td>varchar(16)</td><td>Catchment character</td></tr>
+    <tr><td><code>teaching_facility_flag</code></td><td>integer</td><td>0 or 1</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Defaults true</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="payment">Payment<a class="anchor" href="#payment" aria-label="Link to this section">#</a></h2>
+
+<h3>insurance_scheme</h3>
+
+<p>The payer organisations, named rather than numbered. Organisation names are public, so
+these rows are not flagged illustrative; what is <em>not</em> included is any benefit
+schedule or tariff.</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Code</th><th>Organisation</th><th>Type</th></tr></thead>
+  <tbody>
+    <tr><td><code>UHIA</code></td><td>Universal Health Insurance Authority</td><td>social</td></tr>
+    <tr><td><code>HIO</code></td><td>Health Insurance Organization</td><td>social</td></tr>
+    <tr><td><code>AFMS</code></td><td>Armed Forces Medical Services</td><td>military</td></tr>
+    <tr><td><code>POLICE</code></td><td>Police medical services</td><td>military</td></tr>
+    <tr><td><code>PRIVATE</code></td><td>Private insurance</td><td>private</td></tr>
+    <tr><td><code>OOP</code></td><td>Out of pocket</td><td>out_of_pocket</td></tr>
+  </tbody>
+</table></div>
+
+<p>Columns are <code>insurance_scheme_id</code>, <code>scheme_code</code> (unique),
+<code>scheme_name_en</code>, <code>scheme_name_ar</code>, <code>scheme_type</code>, and
+<code>example_not_official</code>.</p>
+
+<h3>person_insurance</h3>
+
+<p>Coverage intervals. Two schemes overlapping in time is a legitimate state, not an error —
+supplementary private cover alongside a public scheme is common.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>person_insurance_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>person_id</code></td><td>integer</td><td>References <code>person</code></td></tr>
+    <tr><td><code>insurance_scheme_id</code></td><td>integer</td><td>References <code>insurance_scheme</code></td></tr>
+    <tr><td><code>coverage_start_date</code></td><td>date</td><td>Required</td></tr>
+    <tr><td><code>coverage_end_date</code></td><td>date</td><td>Null while active</td></tr>
+    <tr><td><code>subscriber_source_value</code></td><td>varchar(128)</td><td>Membership reference as recorded</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Defaults true</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="care-delivery">Care delivery<a class="anchor" href="#care-delivery" aria-label="Link to this section">#</a></h2>
+
+<h3>care_sector</h3>
+
+<p>Four values — <code>CIVIL</code>, <code>MILITARY</code>, <code>POLICE</code>,
+<code>UNIVERSITY</code> — with both name forms. Kept as a table rather than a text column so
+that a visit can reference it by key.</p>
+
+<h3>referral</h3>
+
+<p>A referral is recorded as an event in its own right, which makes an incomplete referral
+visible: a row with no subsequent visit at the destination is a patient who did not arrive.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>referral_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>person_id</code></td><td>integer</td><td>References <code>person</code></td></tr>
+    <tr><td><code>from_care_site_id</code></td><td>integer</td><td>Referring facility</td></tr>
+    <tr><td><code>to_care_site_id</code></td><td>integer</td><td>Destination facility</td></tr>
+    <tr><td><code>referring_visit_occurrence_id</code></td><td>integer</td><td>Visit the referral was issued at</td></tr>
+    <tr><td><code>referral_date</code></td><td>date</td><td>Required</td></tr>
+    <tr><td><code>referral_priority</code></td><td>varchar(32)</td><td><code>routine</code>, <code>urgent</code>, <code>emergency</code></td></tr>
+    <tr><td><code>referral_reason_source_value</code></td><td>varchar(255)</td><td>Reason as recorded</td></tr>
+    <tr><td><code>referral_reason_concept_id</code></td><td>integer</td><td>Optional mapped reason</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Defaults true</td></tr>
+  </tbody>
+</table></div>
+
+<h3>visit_care_context</h3>
+
+<p>One optional row per visit, attaching sector, payer, and referral to the encounter. This is
+what makes questions like <em>which sector treated publicly insured patients referred
+urgently</em> a join rather than an inference.</p>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>visit_occurrence_id</code></td><td>integer</td><td>Primary key and foreign key to <code>visit_occurrence</code></td></tr>
+    <tr><td><code>care_sector_id</code></td><td>integer</td><td>References <code>care_sector</code></td></tr>
+    <tr><td><code>insurance_scheme_id</code></td><td>integer</td><td>Scheme that covered this visit</td></tr>
+    <tr><td><code>referral_id</code></td><td>integer</td><td>Referral that produced this visit</td></tr>
+    <tr><td><code>emergency_flag</code></td><td>integer</td><td>0 or 1</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Defaults true</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="terminology">Terminology<a class="anchor" href="#terminology" aria-label="Link to this section">#</a></h2>
+
+<p>Three tables hold national code systems and their mapping into standard concepts. They are
+the working area used before — or instead of — loading a licensed vocabulary release.</p>
+
+<h3>source_vocabulary</h3>
+
+<p><code>source_vocabulary_id</code>, <code>vocabulary_code</code> (unique),
+<code>vocabulary_name_en</code>, <code>vocabulary_name_ar</code>, and
+<code>official_status</code>, which defaults to <code>example_not_official</code> and records
+whether a system is a real published release, an illustrative one, or a real code set carrying
+illustrative labels.</p>
+
+<h3>source_code</h3>
+
+<div class="tw"><table>
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>source_code_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>source_vocabulary_id</code></td><td>integer</td><td>References <code>source_vocabulary</code></td></tr>
+    <tr><td><code>source_code</code></td><td>varchar(64)</td><td>The code as published</td></tr>
+    <tr><td><code>code_name_en</code>, <code>code_name_ar</code></td><td>varchar(512)</td><td>Both labels required</td></tr>
+    <tr><td><code>domain_id</code></td><td>varchar(32)</td><td>Clinical domain the code belongs to</td></tr>
+    <tr><td><code>valid_start_date</code>, <code>valid_end_date</code></td><td>date</td><td>Validity window</td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>Per-code status</td></tr>
+  </tbody>
+</table></div>
+
+<h3>source_code_omop_map</h3>
+
+<p>Composite primary key over <code>source_code_id</code>, <code>concept_id</code>, and
+<code>relationship_id</code>, so one source code can carry more than one relationship.
+<code>relationship_id</code> defaults to <code>Maps to</code>, matching the standard
+convention.</p>
+
+<h2 id="metadata">Metadata<a class="anchor" href="#metadata" aria-label="Link to this section">#</a></h2>
+
+<h3>emop_cdm_source</h3>
+
+<p><code>emop_cdm_source_name</code>, <code>emop_cdm_version</code>,
+<code>omop_cdm_version</code>, <code>emop_release_date</code>, and a free-text
+<code>comment</code>. Populated once per deployment so a database can report which version of
+the model produced it.</p>
+
+<h2 id="indexes">Indexes<a class="anchor" href="#indexes" aria-label="Link to this section">#</a></h2>
+
+<p>Six indexes cover the joins these tables are built for: person lookups on
+<code>national_identifier</code> and <code>person_insurance</code>, governorate lookup on
+<code>facility_extension</code>, person lookup on <code>referral</code>, a composite on
+<code>source_code</code> over vocabulary and code, and concept lookup on
+<code>source_code_omop_map</code>.</p><nav class="pager"><a class="prev" href="/emop/data-model/"><span class="dir">Previous</span><span class="ttl">Design principles</span></a><a class="next" href="/emop/tables/"><span class="dir">Next</span><span class="ttl">Core tables</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#identity">Identity</a></li>
+<li><a href="#geography-and-facilities">Geography and facilities</a></li>
+<li><a href="#payment">Payment</a></li>
+<li><a href="#care-delivery">Care delivery</a></li>
+<li><a href="#terminology">Terminology</a></li>
+<li><a href="#metadata">Metadata</a></li>
+<li><a href="#indexes">Indexes</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

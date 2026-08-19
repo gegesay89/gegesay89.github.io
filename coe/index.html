@@ -4,138 +4,132 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>COE — Corpus Ontology Enricher</title>
-<meta name="description" content="COE is an offline system that matches phrases in clinical text to pinned terminology releases and reports coding frequency, mention context, unmapped terms, and code co-occurrence.">
+<meta name="description" content="COE is an offline system that matches phrases in clinical text to pinned terminology releases and reports coding frequency, mention context, unmapped terms, and co-occurrence.">
 <link rel="canonical" href="https://gegesay89.github.io/coe/">
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/docs.css">
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
 <body>
-
-<header class="site-header">
-  <div class="wrap">
-    <a class="brand" href="/">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-        <rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#125c6b" stroke-width="1.6"/>
-        <path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#125c6b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>Gehad Sayed Ahmed</span>
-    </a>
-    <nav class="site-nav">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
       <a href="/">Overview</a>
       <a href="/emop/">EMOP</a>
-      <a href="/coe/" aria-current="page">COE</a>
-      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher">GitHub</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
     </nav>
   </div>
 </header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/" aria-current="page">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a></nav><h1>COE</h1><p class="standfirst">An offline system that reads a fixed snapshot of clinical text, matches phrases against pinned terminology releases, and reports what was coded, in what context, and what could not be matched at all.</p><dl class="facts">
+  <div><dt>Version</dt><dd>0.4.0 alpha</dd></div>
+  <div><dt>Runtime</dt><dd>Python 3.11+</dd></div>
+  <div><dt>Dependencies</dt><dd>None at runtime</dd></div>
+  <div><dt>Network</dt><dd>Never used</dd></div>
+  <div><dt>License</dt><dd>Apache 2.0</dd></div>
+</dl>
 
-<div class="hero">
-  <div class="wrap">
-    <span class="eyebrow">Software · Version 0.4 alpha</span>
-    <h1>COE</h1>
-    <p>An offline system that reads a fixed snapshot of clinical text, matches phrases to pinned terminology releases, and reports what was coded, in what context, and what could not be matched at all.</p>
-  </div>
+<h2 id="the-question-it-answers">The question it answers<a class="anchor" href="#the-question-it-answers" aria-label="Link to this section">#</a></h2>
+
+<p>Given a body of clinical notes and a set of terminology releases, which codes does that
+text actually support, how often, and in what clinical sense? And — usually more useful —
+which frequent clinical phrases match no code at all?</p>
+
+<p>That last output is the point. A term appearing hundreds of times with no matching code is
+either a gap in the terminology, a local abbreviation worth adding as a synonym, or a
+documentation habit nobody has written down. All three are findings.</p>
+
+<h2 id="what-makes-the-counts-trustworthy">What makes the counts trustworthy<a class="anchor" href="#what-makes-the-counts-trustworthy" aria-label="Link to this section">#</a></h2>
+
+<p>Three properties, each of which rules out a specific way this kind of analysis usually goes
+wrong.</p>
+
+<h3>A negated mention is never counted as a finding</h3>
+
+<p>"No evidence of myocardial infarction" contains the phrase, and a naive counter records a
+heart attack. COE assigns every mention exactly one context label, so affirmed, negated,
+family-history, and historical mentions partition cleanly instead of collapsing into one
+number. See <a href="/coe/mention-context/">mention context</a>.</p>
+
+<h3>Every code returned exists in the release it claims</h3>
+
+<p>Matching is exact-first with a small set of deterministic variants. A variant adds a
+dictionary lookup; it never fabricates a code. If a code appears in the output, it is present
+in the pinned release, and verification re-checks that afterwards. See
+<a href="/coe/matching/">phrase matching</a>.</p>
+
+<h3>The same inputs produce the same outputs</h3>
+
+<p>No model, no embeddings, no network, no clock-dependent behaviour. A run is bound to an
+immutable snapshot, pinned releases, a configuration version, and a curation snapshot. Re-running
+reproduces the result, and <code>coe protected verify</code> checks an output against the same
+releases independently.</p>
+
+<h2 id="what-it-is-not">What it is not<a class="anchor" href="#what-it-is-not" aria-label="Link to this section">#</a></h2>
+
+<p>It is not a publication system and not a clinical decision system. Three limits are stated
+in the software itself rather than buried in caveats:</p>
+
+<ul>
+  <li><strong>Candidate evidence is not acceptance.</strong> A discovered mapping stays pending
+  until a human records a decision.</li>
+  <li><strong>Coding counts are evidence about text, not clinical prevalence.</strong> They
+  describe documentation behaviour, not disease frequency.</li>
+  <li><strong>Association rows describe co-mention, not clinical relationship.</strong> Two
+  codes appearing together may share a cause, a template, or nothing at all.</li>
+</ul>
+
+<p>Context qualification is a deliberately conservative screen over text, not a grammatical
+parser. It cannot resolve nested or long-range scope, so an affirmed count remains lexical
+evidence rather than a confirmed finding.</p>
+
+<h2 id="licensed-terminologies">Licensed terminologies<a class="anchor" href="#licensed-terminologies" aria-label="Link to this section">#</a></h2>
+
+<div class="caution">
+  <span class="label">Not in this repository</span>
+  <p>No terminology release, publisher package, or derived index is distributed here. The public
+  tree is code, schemas, and a synthetic demonstration set containing no patient data. Reference
+  indexes are built locally on a machine that already holds the licensed files, under an
+  explicit entitlement assertion.</p>
 </div>
 
-<section>
-  <div class="wrap">
-    <h2>At a glance</h2>
-    <dl class="meta">
-      <div>
-        <dt>Version</dt>
-        <dd>0.4.0 alpha</dd>
-      </div>
-      <div>
-        <dt>Runtime</dt>
-        <dd>Python 3.11 or newer, no network access</dd>
-      </div>
-      <div>
-        <dt>Dependencies</dt>
-        <dd>None at runtime</dd>
-      </div>
-      <div>
-        <dt>License</dt>
-        <dd><a href="https://github.com/gegesay89/coe-corpus-ontology-enricher/blob/main/LICENSE">Apache License 2.0</a></dd>
-      </div>
-    </dl>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Mention context</h2>
-    <p class="lede">Each mention receives exactly one context label, so a ruled-out diagnosis or a relative's illness is never counted as a current finding.</p>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr><th>Label</th><th>Meaning</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>current_clinical</code></td><td>Affirmed, about the patient, present</td></tr>
-          <tr><td><code>negated</code></td><td>The text asserts the concept is absent</td></tr>
-          <tr><td><code>non_patient</code></td><td>The mention belongs to a family member or other person</td></tr>
-          <tr><td><code>historical</code></td><td>The patient's past rather than the present</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="muted" style="margin-top:1.2rem">Precedence runs negated, then non-patient, then historical, then current. Scope is bounded by sentence, word distance, conjunctions that break scope, and record section headers. This is a conservative screen over text, not a full grammatical parser.</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>What a run produces</h2>
-    <ul class="plain">
-      <li>Coding frequency for phrases that resolve to exactly one code</li>
-      <li>Per-system counts where a phrase was ambiguous</li>
-      <li>The context breakdown behind every code</li>
-      <li>Surface forms observed in the text, as synonym evidence</li>
-      <li>Ranked frequent terms that matched no code at all</li>
-      <li>Code co-occurrence pairs scored for association strength</li>
-      <li>A run report carrying provenance, privacy counters, and hashes</li>
-    </ul>
-    <h3>Privacy controls</h3>
-    <ul class="plain">
-      <li>Rows appearing in too few documents are suppressed and reported only as counts</li>
-      <li>Text carrying long digit runs, contact markers, or excessive length is rejected before it can leave the process</li>
-      <li>Documents with unusually many codes are excluded from association counting</li>
-    </ul>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Getting started</h2>
-    <div class="notice">
-      <strong>Licensed terminologies are not distributed here.</strong> The public repository contains code, schemas, and a synthetic demonstration set with no patient data. Reference indexes are built locally on a machine that already holds the licensed files.
-    </div>
-    <pre><code>git clone https://github.com/gegesay89/coe-corpus-ontology-enricher.git
-cd coe-corpus-ontology-enricher
-uv sync --extra dev
-uv run coe demo create demo
-uv run pytest</code></pre>
-    <p class="muted">The demonstration profile is a deterministic slice used for regression testing, including a completable review workflow recorded as an append-only, hash-chained decision log.</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Scope</h2>
-    <p class="lede">COE is not a publication system and not a clinical decision system. Candidate evidence is not acceptance, coding counts are evidence about a body of text rather than clinical prevalence, and association rows describe co-mention rather than any clinical relationship.</p>
-    <div class="linkrow" style="margin-top:1.5rem">
-      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher">Repository</a>
-      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher/blob/main/README.md">Full documentation</a>
-      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher/blob/main/SECURITY.md">Security and data handling</a>
-    </div>
-  </div>
-</section>
-
-<footer class="site-footer">
-  <div class="wrap">
+<div class="note">
+  <span class="label">Start here</span>
+  <p><a href="/coe/quickstart/">Quickstart</a> runs the synthetic slice end to end in four
+  commands. <a href="/coe/concepts/">How it works</a> explains the execution profiles and the
+  pipeline.</p>
+</div><nav class="pager"><a class="next" href="/coe/concepts/"><span class="dir">Next</span><span class="ttl">How it works</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#the-question-it-answers">The question it answers</a></li>
+<li><a href="#what-makes-the-counts-trustworthy">What makes the counts trustworthy</a></li>
+<li><a href="#what-it-is-not">What it is not</a></li>
+<li><a href="#licensed-terminologies">Licensed terminologies</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
     <p>Gehad Sayed Ahmed</p>
-    <p>Apache License 2.0 · <a href="https://github.com/gegesay89">github.com/gegesay89</a></p>
+    <p>Apache License 2.0</p>
   </div>
 </footer>
-
 </body>
 </html>

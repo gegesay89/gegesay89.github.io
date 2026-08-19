@@ -4,141 +4,117 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EMOP — Egyptian Medical Observational Profile</title>
-<meta name="description" content="EMOP is a relational data model for observational health records collected in Egypt: national identifiers, governorates, insurance schemes, referrals, and national code lists.">
+<meta name="description" content="EMOP is a PostgreSQL data model for observational health records collected in Egypt: national identifiers, governorates, insurance schemes, referrals, and national code lists.">
 <link rel="canonical" href="https://gegesay89.github.io/emop/">
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/docs.css">
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
 <body>
-
-<header class="site-header">
-  <div class="wrap">
-    <a class="brand" href="/">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-        <rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#125c6b" stroke-width="1.6"/>
-        <path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#125c6b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>Gehad Sayed Ahmed</span>
-    </a>
-    <nav class="site-nav">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
       <a href="/">Overview</a>
-      <a href="/emop/" aria-current="page">EMOP</a>
+      <a href="/emop/" class="on">EMOP</a>
       <a href="/coe/">COE</a>
-      <a href="https://github.com/gegesay89/emop">GitHub</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
     </nav>
   </div>
 </header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/" aria-current="page">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a></nav><h1>EMOP</h1><p class="standfirst">A data model for observational health records collected in Egypt. It keeps an established international core intact and adds the facts Egyptian care actually records, so that neither has to be distorted to accommodate the other.</p><dl class="facts">
+  <div><dt>Version</dt><dd>0.1.0</dd></div>
+  <div><dt>Database</dt><dd>PostgreSQL 14+</dd></div>
+  <div><dt>Tables</dt><dd>39 core, 13 Egyptian</dd></div>
+  <div><dt>Foreign keys</dt><dd>194</dd></div>
+  <div><dt>License</dt><dd>Apache 2.0</dd></div>
+</dl>
 
-<div class="hero">
-  <div class="wrap">
-    <span class="eyebrow">Data model · Version 0.1</span>
-    <h1>EMOP</h1>
-    <p>A relational data model for observational health records collected in Egypt. It extends an established international model with the facts Egyptian care actually records, and documents how to translate back for international research.</p>
-  </div>
-</div>
+<h2 id="the-problem-this-solves">The problem this solves<a class="anchor" href="#the-problem-this-solves" aria-label="Link to this section">#</a></h2>
 
-<section>
-  <div class="wrap">
-    <h2>At a glance</h2>
-    <dl class="meta">
-      <div>
-        <dt>Version</dt>
-        <dd>0.1.0</dd>
-      </div>
-      <div>
-        <dt>Database</dt>
-        <dd>PostgreSQL 14 or newer</dd>
-      </div>
-      <div>
-        <dt>Tables</dt>
-        <dd>39 international core, 13 Egyptian</dd>
-      </div>
-      <div>
-        <dt>License</dt>
-        <dd><a href="https://github.com/gegesay89/emop/blob/main/LICENSE">Apache License 2.0</a></dd>
-      </div>
-    </dl>
-  </div>
-</section>
+<p>Research data models for health records are written around the systems that produced
+them. Applied to Egyptian records, several facts have nowhere to go. A patient is identified
+by a national identity number, not by a payer member number. Care is delivered across
+parallel systems — civil, military, police, and university hospitals — that are funded and
+governed differently. Insurance is being restructured around a universal scheme running
+alongside the older organisation it replaces. Names are recorded in Arabic, in English, or
+in both, and the legal spelling matters. Referral between facilities is a recorded event
+with its own priority, not an inference drawn from two consecutive visits.</p>
 
-<section>
-  <div class="wrap">
-    <h2>Egyptian tables</h2>
-    <p class="lede">These sit alongside the international core rather than replacing any part of it, so nothing has to be squeezed into a field that was designed for another health system.</p>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr><th>Table</th><th>Purpose</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>governorate</code></td><td>The 27 governorates with ISO 3166-2 codes and regional grouping</td></tr>
-          <tr><td><code>national_identifier</code></td><td>National ID, passport, and other identifier types held for one person</td></tr>
-          <tr><td><code>facility_extension</code></td><td>Facility sector, ministry facility code, governorate, teaching status</td></tr>
-          <tr><td><code>insurance_scheme</code></td><td>Public, military, private, and out-of-pocket payers</td></tr>
-          <tr><td><code>person_insurance</code></td><td>Coverage periods per person and scheme</td></tr>
-          <tr><td><code>care_sector</code></td><td>Civil, military, police, and university care</td></tr>
-          <tr><td><code>referral</code></td><td>Referral between facilities with date, priority, and reason</td></tr>
-          <tr><td><code>visit_care_context</code></td><td>Sector, payer, and referral attached to a single visit</td></tr>
-          <tr><td><code>person_name_bilingual</code></td><td>Names recorded in both writing systems, with preferred language</td></tr>
-          <tr><td><code>source_vocabulary</code></td><td>Named national code systems and their official status</td></tr>
-          <tr><td><code>source_code</code></td><td>Codes within those systems</td></tr>
-          <tr><td><code>source_code_omop_map</code></td><td>Mapping from national codes to standard concepts</td></tr>
-          <tr><td><code>emop_cdm_source</code></td><td>Version metadata for the deployed model</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+<p>The usual workaround is to force these into generic observation rows or free-text source
+fields. That is lossy in a way that is hard to detect later: the data is present, but its
+meaning depends on a convention that lives in someone's head rather than in the schema.</p>
 
-<section>
-  <div class="wrap">
-    <h2>Example data</h2>
-    <div class="notice">
-      <strong>Illustrative codes only.</strong> Invented clinical and tariff codes in this release are prefixed <code>EX-</code> and flagged in the data. None of it comes from the Ministry of Health, the Universal Health Insurance Authority, or the Health Insurance Organization. Governorate codes are the ISO geographic standard, and two diagnosis rows carry real international codes with illustrative translations — both are flagged separately so the distinction is visible in the data itself.
-    </div>
-    <h3>What ships</h3>
-    <ul class="plain">
-      <li>Complete schema definitions with primary keys, foreign keys, and indexes</li>
-      <li>Reference data for governorates, insurance schemes, and care sectors</li>
-      <li>Small example code lists with mappings to standard concepts</li>
-      <li>One fictional patient journey: primary care visit, referral, hospital visit, diagnosis, prescription</li>
-    </ul>
-  </div>
-</section>
+<h2 id="the-approach">The approach<a class="anchor" href="#the-approach" aria-label="Link to this section">#</a></h2>
 
-<section>
-  <div class="wrap">
-    <h2>Install</h2>
-    <pre><code>git clone https://github.com/gegesay89/emop.git
-cd emop
-createdb emop
-./ddl/install.sh postgres://localhost/emop
-psql postgres://localhost/emop -v ON_ERROR_STOP=1 -f vocabulary/load_examples.sql
-psql postgres://localhost/emop -v ON_ERROR_STOP=1 -f examples/toy_egypt.sql</code></pre>
-    <p class="muted">This produces 52 tables and 194 foreign keys. Applying the international foreign-key and index files is covered in the repository, including the order to follow when loading a full standard vocabulary.</p>
-  </div>
-</section>
+<p>EMOP keeps the international core exactly as published — same table names, same columns,
+same grain — and places the Egyptian facts in thirteen dedicated tables beside it. Anyone
+who already knows the core can read an EMOP database without learning new names for old
+concepts. Anyone who needs the Egyptian detail finds it in a table whose name says what it
+holds.</p>
 
-<section>
-  <div class="wrap">
-    <h2>Documentation</h2>
-    <div class="linkrow">
-      <a href="https://github.com/gegesay89/emop">Repository</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/overview.md">Design overview</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/tables.md">Table reference</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/crosswalk-omop.md">Translation for international research</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/docs/fhir-mapping.md">Interoperability mapping</a>
-      <a href="https://github.com/gegesay89/emop/blob/main/CITATION.cff">How to cite</a>
-    </div>
-  </div>
-</section>
+<p>The trade-off is explicit: because the extension tables are additions rather than
+reinterpretations, international tooling built for the unmodified core will not see them.
+The <a href="/emop/crosswalk/">international research</a> page gives a rule for every
+extension table, so a database can be reduced to a standard instance deliberately rather
+than by accident.</p>
 
-<footer class="site-footer">
-  <div class="wrap">
+<h2 id="what-version-0-1-contains">What version 0.1 contains<a class="anchor" href="#what-version-0-1-contains" aria-label="Link to this section">#</a></h2>
+
+<ul>
+  <li>Complete schema definitions for PostgreSQL — tables, primary keys, foreign keys, indexes</li>
+  <li>Thirteen <a href="/emop/extension/">Egyptian extension tables</a> with documented columns</li>
+  <li><a href="/emop/vocabularies/">Reference data</a> for the twenty-seven governorates,
+      the payer organisations, and the care sectors</li>
+  <li>Small illustrative code lists, labelled as such in the data itself</li>
+  <li>A fictional patient journey for verifying an installation</li>
+  <li>A translation rule for every extension table, and an
+      <a href="/emop/interoperability/">interoperability mapping</a></li>
+</ul>
+
+<h2 id="what-it-is-not">What it is not<a class="anchor" href="#what-it-is-not" aria-label="Link to this section">#</a></h2>
+
+<p>It is not an official publication of any Egyptian authority, and it does not carry
+official Ministry of Health, universal insurance, or health insurance organisation code
+lists. The illustrative codes shipped with it exist so the model can be read and installed,
+and every one of them is flagged in the data. It is not a clinical system, and it holds no
+patient data.</p>
+
+<div class="note">
+  <span class="label">Start here</span>
+  <p><a href="/emop/install/">Installation</a> takes an empty database to a populated schema
+  in four commands. <a href="/emop/data-model/">Design principles</a> explains the rules the
+  schema follows and why.</p>
+</div><nav class="pager"><a class="next" href="/emop/data-model/"><span class="dir">Next</span><span class="ttl">Design principles</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#the-problem-this-solves">The problem this solves</a></li>
+<li><a href="#the-approach">The approach</a></li>
+<li><a href="#what-version-0-1-contains">What version 0.1 contains</a></li>
+<li><a href="#what-it-is-not">What it is not</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
     <p>Gehad Sayed Ahmed</p>
-    <p>Apache License 2.0 · Core model courtesy of the OHDSI community</p>
+    <p>Core model courtesy of the OHDSI community</p>
   </div>
 </footer>
-
 </body>
 </html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outputs — COE</title>
+<meta name="description" content="The seven files a protected COE run writes, what each contains, and which two carry corpus text.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/outputs/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/" aria-current="page">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Outputs</nav><h1>Outputs</h1><p class="standfirst">The protected runner writes seven files atomically — together or not at all. Two of them can carry text from the corpus, and only when explicitly attested.</p><div class="note">
+  <span class="label">Two profiles, two output shapes</span>
+  <p>This page documents the <strong>protected runner</strong>, which produces the aggregate
+  enrichment results. The synthetic slice run by <code>coe run</code> writes a different set —
+  <code>matches.jsonl</code>, <code>candidate_sets.jsonl</code>,
+  <code>phrase_aggregates.jsonl</code>, <code>unmapped.jsonl</code>, plus a run manifest,
+  artefact manifest, and run report — because it exists to exercise the pipeline
+  deterministically rather than to produce a privacy-filtered deliverable.</p>
+</div>
+
+<h2 id="the-seven-files">The seven files<a class="anchor" href="#the-seven-files" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table>
+  <thead><tr><th>File</th><th>Contains</th><th>Corpus text</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>coding_counts.jsonl</code></td>
+      <td>Uniquely grounded codings with document frequency, across every context</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><code>ambiguity_counts.jsonl</code></td>
+      <td>Per-system counts where a phrase resolved to more than one code</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><code>context_counts.jsonl</code></td>
+      <td>The context breakdown per code — affirmed, negated, family, historical</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><code>lexical_forms.jsonl</code></td>
+      <td>Surface forms observed per code and context, with match method</td>
+      <td><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td><code>candidate_terms.jsonl</code></td>
+      <td>Ranked frequent unmapped terms with salience and affirmed count</td>
+      <td><strong>Yes</strong></td>
+    </tr>
+    <tr>
+      <td><code>associations.jsonl</code></td>
+      <td>Code co-occurrence pairs, scored, from affirmed mentions only</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><code>run_report.json</code></td>
+      <td>Provenance, software identity, privacy counters, digests</td>
+      <td>No</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<div class="caution">
+  <span class="label">The two lexical files</span>
+  <p><code>lexical_forms.jsonl</code> and <code>candidate_terms.jsonl</code> contain text drawn
+  from the corpus. They are empty unless the attestation sets lexical output approved, and they
+  are the two files to review before any transfer.</p>
+</div>
+
+<h2 id="coding-counts">Coding counts<a class="anchor" href="#coding-counts" aria-label="Link to this section">#</a></h2>
+
+<p>The primary result: for each code that a phrase resolved to unambiguously, how many documents
+mention it. Counts are per document, not per mention, so a term repeated within one note does not
+inflate the figure.</p>
+
+<p>The count spans every context. To separate affirmed from negated, join against the context
+counts — the two files are deliberately separate so that a total can never be silently mistaken
+for an affirmed total.</p>
+
+<h2 id="context-counts">Context counts<a class="anchor" href="#context-counts" aria-label="Link to this section">#</a></h2>
+
+<p>One row per code and context label. Because the labels partition, these sum to the code's
+total mentions, which makes the coding count decomposable rather than opaque.</p>
+
+<h2 id="lexical-forms">Lexical forms<a class="anchor" href="#lexical-forms" aria-label="Link to this section">#</a></h2>
+
+<p>Which words in the corpus actually produced each code, per context, with the match method
+recorded. This is the synonym evidence, and the most direct answer to "what do clinicians here
+actually write?"</p>
+
+<p>Only affirmed forms become published labels in a concept-scheme export; a form seen solely in
+negated or family context stays here as corpus evidence.</p>
+
+<h2 id="candidate-terms">Candidate terms<a class="anchor" href="#candidate-terms" aria-label="Link to this section">#</a></h2>
+
+<p>Frequent phrases that matched nothing, ranked by salience and reported with their
+affirmed-mention count. Verification asserts none of them was actually groundable.</p>
+
+<h2 id="associations">Associations<a class="anchor" href="#associations" aria-label="Link to this section">#</a></h2>
+
+<p>Code pairs that co-occur more than chance would predict, computed from affirmed mentions only
+so that negated and family mentions cannot manufacture an association.</p>
+
+<div class="caution">
+  <span class="label">Co-mention, not relationship</span>
+  <p>Two codes appearing together may share a cause, or share a documentation template, or have
+  nothing to do with each other. These rows are a starting point for a question, not an answer.</p>
+</div>
+
+<h2 id="run-report">Run report<a class="anchor" href="#run-report" aria-label="Link to this section">#</a></h2>
+
+<p>Restricted, path-free provenance: software identity, snapshot and release identities, the
+privacy counters (how many rows were suppressed, how many scrubbed), resource totals, and the
+digests verification re-derives. Deliberately free of file paths, hostnames, and usernames so
+that the report itself can be reviewed without disclosing anything about the host.</p>
+
+<h2 id="export-formats">Export formats<a class="anchor" href="#export-formats" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe export csv  --run /restricted/run/output --output /restricted/run/csv
+coe export skos --run /restricted/run/output --output /restricted/run/scheme.ttl</code></pre>
+
+<p>The concept-scheme export emits one concept per coding row, the code as its notation,
+affirmed surface forms as preferred and alternative labels, associations as related concepts, and
+each concept's affirmed document count as an annotation.</p>
+
+<div class="note">
+  <span class="label">Classification is inherited</span>
+  <p>An export of a protected run carries the same restriction as the run it came from.
+  Converting the format does not change what the data is.</p>
+</div><nav class="pager"><a class="prev" href="/coe/matching/"><span class="dir">Previous</span><span class="ttl">Phrase matching</span></a><a class="next" href="/coe/quickstart/"><span class="dir">Next</span><span class="ttl">Quickstart</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#the-seven-files">The seven files</a></li>
+<li><a href="#coding-counts">Coding counts</a></li>
+<li><a href="#context-counts">Context counts</a></li>
+<li><a href="#lexical-forms">Lexical forms</a></li>
+<li><a href="#candidate-terms">Candidate terms</a></li>
+<li><a href="#associations">Associations</a></li>
+<li><a href="#run-report">Run report</a></li>
+<li><a href="#export-formats">Export formats</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>

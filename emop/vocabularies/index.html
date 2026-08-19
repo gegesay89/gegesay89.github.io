@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference data — EMOP</title>
+<meta name="description" content="What reference data ships with EMOP, and precisely which rows are published codes versus illustrative examples.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/vocabularies/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/" aria-current="page">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Reference data</nav><h1>Reference data</h1><p class="standfirst">Some rows shipped with EMOP are real published reference data; others are invented so the model can be read and installed. This page states which is which, row by row.</p><div class="caution">
+  <span class="label">Read before citing</span>
+  <p>No clinical or tariff code in this repository comes from the Ministry of Health, the
+  Universal Health Insurance Authority, or the Health Insurance Organization. Invented codes
+  carry an <code>EX-</code> prefix and <code>example_not_official = true</code>. Do not quote
+  any code from this repository as an official Egyptian code.</p>
+</div>
+
+<h2 id="what-ships-and-its-status">What ships, and its status<a class="anchor" href="#what-ships-and-its-status" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table>
+  <thead><tr><th>File</th><th>Rows</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>governorate.csv</code></td><td>27</td>
+      <td><strong>Published.</strong> International subdivision codes — geographic, not clinical</td>
+    </tr>
+    <tr>
+      <td><code>insurance_scheme.csv</code></td><td>6</td>
+      <td><strong>Published.</strong> Organisation names only; no benefit schedule or tariff</td>
+    </tr>
+    <tr>
+      <td><code>care_sector.csv</code></td><td>4</td>
+      <td><strong>Published.</strong> Civil, military, police, university</td>
+    </tr>
+    <tr>
+      <td><code>icd10_eg.example.csv</code></td><td>2</td>
+      <td><strong>Published codes, illustrative labels.</strong> Real international diagnosis
+      codes and titles; the Arabic labels are translations, not an official Egyptian release</td>
+    </tr>
+    <tr>
+      <td><code>moh_procedure.example.csv</code></td><td>2</td>
+      <td><strong>Invented.</strong> <code>EX-MOH-PROC-*</code></td>
+    </tr>
+    <tr>
+      <td><code>egyptian_drug.example.csv</code></td><td>2</td>
+      <td><strong>Invented.</strong> <code>EX-EDRUG-*</code></td>
+    </tr>
+    <tr>
+      <td><code>uhia_service.example.csv</code></td><td>1</td>
+      <td><strong>Invented.</strong> <code>EX-UHIA-*</code></td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2 id="why-the-distinction-is-in-the-data">Why the distinction is in the data<a class="anchor" href="#why-the-distinction-is-in-the-data" aria-label="Link to this section">#</a></h2>
+
+<p>A reader should not have to consult documentation to learn whether a code is real. Both the
+per-code <code>example_not_official</code> flag and the per-system
+<code>official_status</code> value are queryable:</p>
+
+<pre><code>select sv.vocabulary_code, sv.official_status,
+       sc.source_code, sc.example_not_official
+  from emop.source_code sc
+  join emop.source_vocabulary sv using (source_vocabulary_id)
+ order by sc.source_code_id;</code></pre>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>vocabulary_code</th><th>official_status</th><th>source_code</th><th>example_not_official</th></tr></thead>
+  <tbody>
+    <tr><td>MOH_PROCEDURE</td><td>example_not_official</td><td>EX-MOH-PROC-001</td><td>t</td></tr>
+    <tr><td>MOH_PROCEDURE</td><td>example_not_official</td><td>EX-MOH-PROC-002</td><td>t</td></tr>
+    <tr><td>EG_DRUG</td><td>example_not_official</td><td>EX-EDRUG-001</td><td>t</td></tr>
+    <tr><td>EG_DRUG</td><td>example_not_official</td><td>EX-EDRUG-002</td><td>t</td></tr>
+    <tr><td>ICD10_EG</td><td>official_code_illustrative_label</td><td>E11.9</td><td>f</td></tr>
+    <tr><td>ICD10_EG</td><td>official_code_illustrative_label</td><td>I10</td><td>f</td></tr>
+    <tr><td>UHIA_SERVICE</td><td>example_not_official</td><td>EX-UHIA-OPD-001</td><td>t</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="governorates">Governorates<a class="anchor" href="#governorates" aria-label="Link to this section">#</a></h2>
+
+<p>All twenty-seven, grouped into six regions for aggregate reporting: Greater Cairo, Delta,
+Canal, Sinai, Upper Egypt, and Frontier. Each row carries both name forms and its
+international subdivision code — Cairo is <code>EG-C</code>, Alexandria <code>EG-ALX</code>,
+Luxor <code>EG-LX</code>.</p>
+
+<p>These are geographic identifiers. They say nothing clinical, which is why they are the one
+part of the reference data that can be used as-is.</p>
+
+<h2 id="illustrative-concepts">Illustrative concepts<a class="anchor" href="#illustrative-concepts" aria-label="Link to this section">#</a></h2>
+
+<p><code>vocabulary/load_examples.sql</code> also populates the vocabulary tables so that a
+fresh database is referentially complete: concept <code>0</code>, one metadata concept,
+language concepts, the gender, race, ethnicity, visit and type concepts the toy data
+references, and the <code>domain</code> and <code>concept_class</code> rows those concepts
+depend on.</p>
+
+<p>Without those reference rows the published foreign-key constraints cannot be applied. With
+them, all 194 apply cleanly — which is what makes the example set worth shipping.</p>
+
+<div class="caution">
+  <span class="label">Do not mix</span>
+  <p>If you are loading a real standard vocabulary release, skip
+  <code>load_examples.sql</code> entirely. Its concepts occupy the reserved local range and
+  will not collide, but having illustrative rows beside a production vocabulary is confusing
+  for no benefit. See <a href="/emop/install/">Installation</a>.</p>
+</div><nav class="pager"><a class="prev" href="/emop/tables/"><span class="dir">Previous</span><span class="ttl">Core tables</span></a><a class="next" href="/emop/install/"><span class="dir">Next</span><span class="ttl">Installation</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#what-ships-and-its-status">What ships, and its status</a></li>
+<li><a href="#why-the-distinction-is-in-the-data">Why the distinction is in the data</a></li>
+<li><a href="#governorates">Governorates</a></li>
+<li><a href="#illustrative-concepts">Illustrative concepts</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

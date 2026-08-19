@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interoperability mapping — EMOP</title>
+<meta name="description" content="How EMOP tables correspond to interoperability resources for exchanging records between systems.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/interoperability/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/" aria-current="page">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Interoperability</nav><h1>Interoperability mapping</h1><p class="standfirst">A resource-by-resource correspondence for exchanging EMOP records between systems. This is a mapping note, not a published implementation guide.</p><p>EMOP is a model for storing and analysing records. Exchange standards address a different
+problem: moving one patient's data between systems. The two are complementary, and the mapping
+below is the practical bridge. Resource names follow the widely used release 4.</p>
+
+<div class="note">
+  <span class="label">Scope</span>
+  <p>This is a table-level correspondence, deliberately stopping short of publishing executable
+  structure maps or profiles. Version 0.1 does not claim to be an implementation guide, because
+  a guide implies conformance rules and a test suite that do not yet exist.</p>
+</div>
+
+<h2 id="resource-correspondence">Resource correspondence<a class="anchor" href="#resource-correspondence" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Resource</th><th>EMOP source</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>Patient</code></td><td><code>person</code> + <code>person_name_bilingual</code></td>
+        <td>Demographics from the core; names from the extension</td></tr>
+    <tr><td><code>Patient.identifier</code></td><td><code>national_identifier</code></td>
+        <td>One entry per row. Identifier type maps to the identifier system</td></tr>
+    <tr><td><code>Patient.address</code></td><td><code>location</code>, <code>governorate</code></td>
+        <td>Governorate is the meaningful administrative level</td></tr>
+    <tr><td><code>Encounter</code></td><td><code>visit_occurrence</code> + <code>visit_care_context</code></td>
+        <td>Class from the visit concept; sector and payer from the context row</td></tr>
+    <tr><td><code>Encounter</code> referral fields</td><td><code>referral</code></td>
+        <td>Priority maps to the encounter priority</td></tr>
+    <tr><td><code>Condition</code></td><td><code>condition_occurrence</code></td><td>Direct</td></tr>
+    <tr><td><code>MedicationRequest</code>, <code>MedicationStatement</code></td>
+        <td><code>drug_exposure</code></td>
+        <td>Which resource applies depends on whether the row records an order or an
+        administration</td></tr>
+    <tr><td><code>Procedure</code></td><td><code>procedure_occurrence</code></td><td>Direct</td></tr>
+    <tr><td><code>Observation</code></td><td><code>measurement</code>, <code>observation</code></td>
+        <td>Measurements carry value and unit; observations may not</td></tr>
+    <tr><td><code>Organization</code></td><td><code>care_site</code> + <code>facility_extension</code></td>
+        <td>Ministry facility code becomes an organisation identifier</td></tr>
+    <tr><td><code>Practitioner</code></td><td><code>provider</code></td><td>Direct</td></tr>
+    <tr><td><code>Coverage</code></td><td><code>person_insurance</code> + <code>insurance_scheme</code></td>
+        <td>Period from the coverage row; payer from the scheme</td></tr>
+    <tr><td><code>Coverage.payor</code></td><td><code>insurance_scheme.scheme_code</code></td>
+        <td><code>UHIA</code>, <code>HIO</code>, <code>AFMS</code>, and so on</td></tr>
+    <tr><td>Coded values</td><td><code>source_code</code> → <code>source_code_omop_map</code> → <code>concept</code></td>
+        <td>Emit both the national code and the standard concept it maps to</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="two-traps-worth-stating">Two traps worth stating<a class="anchor" href="#two-traps-worth-stating" aria-label="Link to this section">#</a></h2>
+
+<h3>Identity is not the primary key</h3>
+
+<p>A national identity number belongs in the identifier list, never in the resource id. The
+resource id is a system key, meaningless outside the server that issued it; the national
+identifier is a real-world identifier that must survive being moved between systems. Conflating
+them makes the record impossible to re-link correctly and leaks an identifier into every URL
+that references the patient.</p>
+
+<h3>Language is a property of the name, not the record</h3>
+
+<p><code>person_name_bilingual.preferred_language</code> states which form to display, but a
+name resource can carry both. When the Arabic form is the legal name, mark it as the official
+use rather than dropping the Latin form — both are needed, for different purposes.</p>
+
+<h2 id="coded-values-in-both-directions">Coded values in both directions<a class="anchor" href="#coded-values-in-both-directions" aria-label="Link to this section">#</a></h2>
+
+<p>When exporting a diagnosis, emit two codings on the same element: the national source code
+from <code>source_code</code>, and the standard concept reached through
+<code>source_code_omop_map</code>. The receiving system can then use whichever it understands
+without a lossy guess, and the mapping stays auditable.</p><nav class="pager"><a class="prev" href="/emop/crosswalk/"><span class="dir">Previous</span><span class="ttl">International research</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#resource-correspondence">Resource correspondence</a></li>
+<li><a href="#two-traps-worth-stating">Two traps worth stating</a></li>
+<li><a href="#coded-values-in-both-directions">Coded values in both directions</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

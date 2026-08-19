@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installation — EMOP</title>
+<meta name="description" content="Install the EMOP schema on PostgreSQL, load the example data, apply foreign keys and indexes, and verify the result.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/install/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/" aria-current="page">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Installation</nav><h1>Installation</h1><p class="standfirst">Four commands take an empty database to a populated, referentially complete schema. Every figure on this page was measured on a clean PostgreSQL 17 database.</p><h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
+
+<ul>
+  <li>PostgreSQL 14 or newer, with <code>psql</code> and <code>createdb</code> on the path</li>
+  <li>A database role permitted to create schemas</li>
+  <li>No extensions and no other dependencies</li>
+</ul>
+
+<h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2>
+
+<pre><code>git clone https://github.com/gegesay89/emop.git
+cd emop
+createdb emop
+./ddl/install.sh postgres://localhost/emop</code></pre>
+
+<p>The script applies four files in a fixed order, stopping on the first error:</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>#</th><th>File</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>ddl/00_create_schema.sql</code></td><td>Creates schema <code>emop</code></td></tr>
+    <tr><td>2</td><td><code>ddl/omop_cdm_5.4/…_ddl.sql</code></td><td>39 core tables</td></tr>
+    <tr><td>3</td><td><code>ddl/omop_cdm_5.4/…_primary_keys.sql</code></td><td>Core primary keys</td></tr>
+    <tr><td>4</td><td><code>ddl/emop_extension.sql</code></td><td>13 Egyptian tables, their keys and indexes</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="load-the-example-data">Load the example data<a class="anchor" href="#load-the-example-data" aria-label="Link to this section">#</a></h2>
+
+<p>Optional, and only for an empty database you intend to explore.</p>
+
+<pre><code>psql postgres://localhost/emop -v ON_ERROR_STOP=1 \
+  -f vocabulary/load_examples.sql
+psql postgres://localhost/emop -v ON_ERROR_STOP=1 \
+  -f examples/toy_egypt.sql</code></pre>
+
+<p>The first file loads reference data and the illustrative concepts. The second loads one
+fictional patient: a primary care visit, an urgent referral, a hospital visit, a diagnosis,
+and a prescription — enough to exercise every extension table join.</p>
+
+<div class="note">
+  <span class="label">Always pass ON_ERROR_STOP</span>
+  <p>Without <code>-v ON_ERROR_STOP=1</code>, <code>psql</code> reports an error and continues,
+  leaving a partly loaded database that looks installed. The install script sets it for you;
+  set it yourself for these two files.</p>
+</div>
+
+<h2 id="apply-foreign-keys-and-indexes">Apply foreign keys and indexes<a class="anchor" href="#apply-foreign-keys-and-indexes" aria-label="Link to this section">#</a></h2>
+
+<p>The published constraint file requires the vocabulary reference rows to exist. If you loaded
+the example set, they do:</p>
+
+<pre><code>psql postgres://localhost/emop -v ON_ERROR_STOP=1 \
+  -f ddl/omop_cdm_5.4/OMOPCDM_postgresql_5.4_constraints.sql
+psql postgres://localhost/emop -v ON_ERROR_STOP=1 \
+  -f ddl/omop_cdm_5.4/OMOPCDM_postgresql_5.4_indices.sql</code></pre>
+
+<h2 id="verify">Verify<a class="anchor" href="#verify" aria-label="Link to this section">#</a></h2>
+
+<pre><code>select count(*) from information_schema.tables
+ where table_schema = 'emop';
+<span class="c">-- 52</span>
+
+select count(*) from information_schema.table_constraints
+ where constraint_schema = 'emop' and constraint_type = 'FOREIGN KEY';
+<span class="c">-- 194</span>
+
+select count(*) from emop.governorate;
+<span class="c">-- 27</span>
+
+select count(*) from emop.visit_occurrence;
+<span class="c">-- 2</span></code></pre>
+
+<p>A join across the extension tables confirms the Egyptian layer is wired correctly:</p>
+
+<pre><code>select p.person_id,
+       g.governorate_name_en as governorate,
+       s.scheme_code         as payer,
+       cs.sector_name_en     as sector,
+       c.concept_name        as condition
+  from emop.person p
+  join emop.person_insurance   pi  on pi.person_id = p.person_id
+  join emop.insurance_scheme   s   on s.insurance_scheme_id = pi.insurance_scheme_id
+  join emop.visit_occurrence   v   on v.person_id = p.person_id
+  join emop.visit_care_context vcc on vcc.visit_occurrence_id = v.visit_occurrence_id
+  join emop.care_sector        cs  on cs.care_sector_id = vcc.care_sector_id
+  join emop.facility_extension fe  on fe.care_site_id = v.care_site_id
+  join emop.governorate        g   on g.governorate_id = fe.governorate_id
+  left join emop.condition_occurrence co on co.visit_occurrence_id = v.visit_occurrence_id
+  left join emop.concept c on c.concept_id = co.condition_concept_id
+ order by v.visit_occurrence_id;</code></pre>
+
+<p>Two rows: a primary care visit in the civil sector, then the university hospital visit it
+was referred to, carrying the diagnosis.</p>
+
+<h2 id="loading-a-real-vocabulary-instead">Loading a real vocabulary instead<a class="anchor" href="#loading-a-real-vocabulary-instead" aria-label="Link to this section">#</a></h2>
+
+<p>For a research deployment, skip the example loader:</p>
+
+<ol>
+  <li>Run <code>./ddl/install.sh</code></li>
+  <li>Load your standard vocabulary release into the vocabulary tables</li>
+  <li>Apply the constraint and index files</li>
+  <li>Load clinical data, then populate the extension tables</li>
+</ol>
+
+<p>Illustrative concepts occupy the reserved local range and so cannot collide with a standard
+release, but mixing them adds confusion without adding value.</p>
+
+<h2 id="uninstall">Uninstall<a class="anchor" href="#uninstall" aria-label="Link to this section">#</a></h2>
+
+<pre><code>psql postgres://localhost/emop -c 'drop schema emop cascade;'</code></pre><nav class="pager"><a class="prev" href="/emop/vocabularies/"><span class="dir">Previous</span><span class="ttl">Reference data</span></a><a class="next" href="/emop/crosswalk/"><span class="dir">Next</span><span class="ttl">International research</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#requirements">Requirements</a></li>
+<li><a href="#install">Install</a></li>
+<li><a href="#load-the-example-data">Load the example data</a></li>
+<li><a href="#apply-foreign-keys-and-indexes">Apply foreign keys and indexes</a></li>
+<li><a href="#verify">Verify</a></li>
+<li><a href="#loading-a-real-vocabulary-instead">Loading a real vocabulary instead</a></li>
+<li><a href="#uninstall">Uninstall</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

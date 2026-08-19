@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design principles — EMOP</title>
+<meta name="description" content="The four rules EMOP follows: keep core table names, add rather than overload, reserve the local concept range, and never invent an official code.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/data-model/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/" aria-current="page">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Design principles</nav><h1>Design principles</h1><p class="standfirst">Four rules govern every decision in the schema. They exist so that a reader can predict where a fact lives, and so that a claim about the data can be checked against the database rather than against documentation.</p><h2 id="1-core-table-names-do-not-change">1. Core table names do not change<a class="anchor" href="#1-core-table-names-do-not-change" aria-label="Link to this section">#</a></h2>
+
+<p><code>person</code> is <code>person</code>. <code>visit_occurrence</code> is
+<code>visit_occurrence</code>. Every core table keeps its published name, columns, and grain,
+because renaming would impose a translation cost on every reader and every existing extract
+script while adding no information.</p>
+
+<p>A practical consequence: extract logic written against the standard core runs against an
+EMOP database unmodified, provided it does not require the extension tables.</p>
+
+<h2 id="2-add-tables-rather-than-overload-existing-ones">2. Add tables rather than overload existing ones<a class="anchor" href="#2-add-tables-rather-than-overload-existing-ones" aria-label="Link to this section">#</a></h2>
+
+<p>National identity numbers do not go into a source-value column that also holds something
+else. Insurance scheme membership does not become an untyped observation row. Each Egyptian
+fact gets a table whose name and columns state its meaning.</p>
+
+<p>The cost is more tables. The benefit is that meaning is enforced by structure: a foreign
+key either exists or it does not, and a column either has a value or it does not. Neither
+depends on a convention that has to be remembered.</p>
+
+<div class="note">
+  <span class="label">Why this matters</span>
+  <p>Overloaded columns fail quietly. If national identity numbers and hospital numbers share
+  one field, a query counting patients by identifier type cannot distinguish them, and the
+  error surfaces as a plausible-looking number rather than as an exception.</p>
+</div>
+
+<h2 id="3-local-concepts-live-at-2-000-000-000-and-above">3. Local concepts live at 2,000,000,000 and above<a class="anchor" href="#3-local-concepts-live-at-2-000-000-000-and-above" aria-label="Link to this section">#</a></h2>
+
+<p>The convention in the international model reserves concept identifiers at and above two
+billion for concepts defined by a local site. EMOP follows it. Illustrative concepts shipped
+with this release occupy that range, so they can never collide with a standard vocabulary
+loaded later.</p>
+
+<p>Identifier <code>0</code> is also populated, with the conventional
+<em>No matching concept</em> row, because the published foreign-key constraints reference
+it.</p>
+
+<h2 id="4-an-official-code-is-never-invented">4. An official code is never invented<a class="anchor" href="#4-an-official-code-is-never-invented" aria-label="Link to this section">#</a></h2>
+
+<p>This is the rule with the most consequence for how the release is shipped. Publishing
+plausible-looking Ministry of Health or insurance authority codes would make the model
+unusable for the exact audience it targets, because a reader could not tell which codes were
+real. So the schema for national code lists is complete, and the codes populating it are
+labelled.</p>
+
+<p>Three states are distinguished, and all three are visible in the data:</p>
+
+<div class="tw"><table>
+  <thead><tr><th>State</th><th>Flag</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Invented for illustration</td>
+      <td><code>example_not_official = true</code>, code prefixed <code>EX-</code></td>
+      <td><code>EX-MOH-PROC-001</code></td>
+    </tr>
+    <tr>
+      <td>Published code, illustrative label</td>
+      <td><code>example_not_official = false</code>, <code>official_status</code> records the nuance</td>
+      <td><code>E11.9</code> with an Arabic translation</td>
+    </tr>
+    <tr>
+      <td>Published reference data</td>
+      <td><code>example_not_official = false</code></td>
+      <td>Governorate code <code>EG-C</code></td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p><a href="/emop/vocabularies/">Reference data</a> lists what ships in each state.</p>
+
+<h2 id="naming-conventions">Naming conventions<a class="anchor" href="#naming-conventions" aria-label="Link to this section">#</a></h2>
+
+<ul>
+  <li>Extension tables use singular nouns matching core style: <code>governorate</code>,
+      <code>referral</code>.</li>
+  <li>A table extending exactly one core table one-to-one is named
+      <code>&lt;core&gt;_extension</code> and takes the core primary key as its own — see
+      <code>facility_extension</code>.</li>
+  <li>Bilingual columns are suffixed <code>_en</code> and <code>_ar</code>.</li>
+  <li>Every table that can carry illustrative rows has an
+      <code>example_not_official</code> boolean.</li>
+</ul>
+
+<h2 id="versioning">Versioning<a class="anchor" href="#versioning" aria-label="Link to this section">#</a></h2>
+
+<p>The deployed model records its own version in <code>emop_cdm_source</code>, alongside the
+version of the international core it was built against. A database can therefore state what
+it is without reference to external documentation, which matters when an extract outlives the
+person who produced it.</p><nav class="pager"><a class="prev" href="/emop/"><span class="dir">Previous</span><span class="ttl">Overview</span></a><a class="next" href="/emop/extension/"><span class="dir">Next</span><span class="ttl">Egyptian tables</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#1-core-table-names-do-not-change">1. Core table names do not change</a></li>
+<li><a href="#2-add-tables-rather-than-overload-existing-ones">2. Add tables rather than overload existing ones</a></li>
+<li><a href="#3-local-concepts-live-at-2-000-000-000-and-above">3. Local concepts live at 2,000,000,000 and above</a></li>
+<li><a href="#4-an-official-code-is-never-invented">4. An official code is never invented</a></li>
+<li><a href="#naming-conventions">Naming conventions</a></li>
+<li><a href="#versioning">Versioning</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

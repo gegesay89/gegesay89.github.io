@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy controls — COE</title>
+<meta name="description" content="COE&#x27;s suppression floor, scrub filter, association bounds, attestation gate, and the limits each control does not cover.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/privacy/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/" aria-current="page">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Privacy controls</nav><h1>Privacy controls</h1><p class="standfirst">Four controls applied before anything is written, each recorded in the run report and re-checked by the verifier. Each is stated with what it does not cover.</p><h2 id="small-cell-suppression">Small-cell suppression<a class="anchor" href="#small-cell-suppression" aria-label="Link to this section">#</a></h2>
+
+<p>Rows whose document count falls below a floor — three by default — are suppressed and
+reported only as a count of suppressed rows. The reasoning is that near-unique evidence can
+single out an individual: a code appearing in exactly one document, together with a rare surface
+form, may identify the patient it came from.</p>
+
+<p>The floor is configurable upward. The count of what was suppressed is always reported, so a
+reader can see that filtering occurred and how much.</p>
+
+<h2 id="scrub-filter">Scrub filter<a class="anchor" href="#scrub-filter" aria-label="Link to this section">#</a></h2>
+
+<p>Any text that would leave the process is rejected if it carries long digit runs, contact
+markers, or excessive length. Scrubbed rows are counted, never emitted.</p>
+
+<p>This targets the realistic failure mode for text extracted from clinical notes: a phrase that
+has swept up an identifier, a phone number, or a pasted block. The filter is deterministic —
+the same text is always rejected — and the counter makes rejection visible.</p>
+
+<h2 id="association-bounds">Association bounds<a class="anchor" href="#association-bounds" aria-label="Link to this section">#</a></h2>
+
+<p>Documents containing more codes than a per-document limit are excluded from association
+counting, and the pair table is hard-capped. A single document dense with codes would otherwise
+generate a combinatorial number of pairs, both distorting the statistics and creating a
+fingerprint of that one document.</p>
+
+<h2 id="the-attestation-gate">The attestation gate<a class="anchor" href="#the-attestation-gate" aria-label="Link to this section">#</a></h2>
+
+<p>A protected run requires a machine-readable data-use attestation naming the approval, the
+retention policy, and the output classification. The software validates that the approval is
+affirmative and that the classification remains restricted.</p>
+
+<p>Lexical outputs — the two files that can carry corpus text — are emitted only when the
+attestation explicitly approves lexical output. Coding counts, ambiguity counts, and association
+rows are always aggregate-only.</p>
+
+<div class="caution">
+  <span class="label">What the attestation is not</span>
+  <p>The file is unsigned and reusable, so it is a procedural fail-closed gate, not proof of
+  authorisation. An authorised person must confirm before each run that its references still bind
+  to the exact corpus, purpose, host, and validity window. The example attestation shipped with
+  the repository is a template and is intentionally not approved.</p>
+</div>
+
+<h2 id="input-handling">Input handling<a class="anchor" href="#input-handling" aria-label="Link to this section">#</a></h2>
+
+<p>The protected adapter accepts recursively discovered plain-text files only, and rejects links,
+junctions, reparse points, hard links, and non-regular files. Inputs are read in place, mounted
+read-only, with a separate restricted writable directory for output. Resource limits are bounded
+so exhaustion fails early rather than midway.</p>
+
+<p>Documents in other formats need a separately reviewed extraction step that writes plain text
+into an approved directory first. COE performs no document conversion and no optical character
+recognition, and does not pretend to.</p>
+
+<h2 id="limits-worth-stating-plainly">Limits worth stating plainly<a class="anchor" href="#limits-worth-stating-plainly" aria-label="Link to this section">#</a></h2>
+
+<ul>
+  <li><strong>Suppression and scrubbing are not a de-identification method.</strong> They are
+  defence in depth. The data owner must document the approved method and the residual-risk
+  decision separately.</li>
+  <li><strong>Aggregate output is still treated as restricted.</strong> Even a table of counts
+  inherits the classification of the corpus it came from.</li>
+  <li><strong>Text exists transiently in process memory,</strong> and the runtime cannot
+  guarantee secure erasure. Host access controls, swap and crash-dump policy, disk encryption,
+  and retention rules remain mandatory.</li>
+  <li><strong>An export inherits its source classification.</strong> Converting to another format
+  does not change what the data is.</li>
+</ul>
+
+<h2 id="verifying-afterwards">Verifying afterwards<a class="anchor" href="#verifying-afterwards" aria-label="Link to this section">#</a></h2>
+
+<pre><code>coe protected verify \
+  --output /restricted/run/output \
+  --index /path/to/reference/one.sqlite3 \
+  --index /path/to/reference/two.sqlite3</code></pre>
+
+<p>Verification independently re-checks the exact file inventory, canonical encoding, artefact
+and semantic digests, run fingerprint, release identities, code grounding — including that no
+candidate term was actually groundable — and compliance with both the suppression floor and the
+scrub rules.</p>
+
+<p>It requires exactly the releases the run was bound to. Verifying against a different
+vocabulary version fails rather than passing quietly, which is the behaviour that makes the check
+worth running.</p><nav class="pager"><a class="prev" href="/coe/quickstart/"><span class="dir">Previous</span><span class="ttl">Quickstart</span></a><a class="next" href="/coe/curation/"><span class="dir">Next</span><span class="ttl">Curation</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#small-cell-suppression">Small-cell suppression</a></li>
+<li><a href="#scrub-filter">Scrub filter</a></li>
+<li><a href="#association-bounds">Association bounds</a></li>
+<li><a href="#the-attestation-gate">The attestation gate</a></li>
+<li><a href="#input-handling">Input handling</a></li>
+<li><a href="#limits-worth-stating-plainly">Limits worth stating plainly</a></li>
+<li><a href="#verifying-afterwards">Verifying afterwards</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>

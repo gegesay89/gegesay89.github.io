@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Core tables — EMOP</title>
+<meta name="description" content="The 39 international core tables carried unchanged in EMOP, grouped by role.">
+<link rel="canonical" href="https://gegesay89.github.io/emop/tables/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/" class="on">EMOP</a>
+      <a href="/coe/">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Data model</span>
+<a class="project-name" href="/emop/">EMOP</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/emop/">Overview</a></li>
+<li><a href="/emop/data-model/">Design principles</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/emop/extension/">Egyptian tables</a></li>
+<li><a href="/emop/tables/" aria-current="page">Core tables</a></li>
+<li><a href="/emop/vocabularies/">Reference data</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Using EMOP</h4><ul>
+<li><a href="/emop/install/">Installation</a></li>
+<li><a href="/emop/crosswalk/">International research</a></li>
+<li><a href="/emop/interoperability/">Interoperability</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/emop/">EMOP</a><span>/</span>Core tables</nav><h1>Core tables</h1><p class="standfirst">Thirty-nine tables carried without modification from the international model, grouped by the role each group plays. Names, columns, and grain are unchanged.</p><p>These are vendored from the published PostgreSQL definitions, version 5.4, under the Apache
+License 2.0. The only edit is mechanical: the schema placeholder is replaced with
+<code>emop</code> so the files run without a templating step. Provenance is recorded in
+<code>ddl/omop_cdm_5.4/SOURCE.txt</code>.</p>
+
+<div class="note">
+  <span class="label">Column definitions</span>
+  <p>Authoritative column-level documentation for these tables is maintained upstream by the
+  OHDSI community. This page states which tables EMOP carries and what each is for; it does
+  not restate the upstream specification.</p>
+</div>
+
+<h2 id="clinical-events">Clinical events<a class="anchor" href="#clinical-events" aria-label="Link to this section">#</a></h2>
+
+<p>The record of what happened to a patient.</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Table</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>person</code></td><td>One row per patient: birth date parts, gender, race, ethnicity, home location</td></tr>
+    <tr><td><code>observation_period</code></td><td>Spans during which the patient's data is expected to be complete</td></tr>
+    <tr><td><code>visit_occurrence</code></td><td>Encounters — outpatient, inpatient, emergency</td></tr>
+    <tr><td><code>visit_detail</code></td><td>Sub-encounters, such as a ward transfer within an admission</td></tr>
+    <tr><td><code>condition_occurrence</code></td><td>Diagnoses and clinical findings</td></tr>
+    <tr><td><code>drug_exposure</code></td><td>Prescriptions, dispensations, administrations</td></tr>
+    <tr><td><code>procedure_occurrence</code></td><td>Procedures performed</td></tr>
+    <tr><td><code>device_exposure</code></td><td>Devices used or implanted</td></tr>
+    <tr><td><code>measurement</code></td><td>Laboratory results and vital signs, with values and units</td></tr>
+    <tr><td><code>observation</code></td><td>Clinical facts that are not measurements</td></tr>
+    <tr><td><code>death</code></td><td>Date and cause where recorded</td></tr>
+    <tr><td><code>note</code></td><td>Clinical documents as text</td></tr>
+    <tr><td><code>note_nlp</code></td><td>Structured output extracted from those notes</td></tr>
+    <tr><td><code>specimen</code></td><td>Samples collected</td></tr>
+    <tr><td><code>fact_relationship</code></td><td>Typed relationships between two records in any domain</td></tr>
+    <tr><td><code>episode</code></td><td>Higher-level clinical episodes spanning several events</td></tr>
+    <tr><td><code>episode_event</code></td><td>Links individual events to an episode</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="health-system">Health system<a class="anchor" href="#health-system" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Table</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>location</code></td><td>Geographic addresses</td></tr>
+    <tr><td><code>care_site</code></td><td>Facilities delivering care — extended by <code>facility_extension</code></td></tr>
+    <tr><td><code>provider</code></td><td>Individual clinicians and their specialties</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="economics">Economics<a class="anchor" href="#economics" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Table</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>payer_plan_period</code></td><td>Coverage intervals in the standard shape — see also <code>person_insurance</code></td></tr>
+    <tr><td><code>cost</code></td><td>Amounts attached to a clinical event</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="derived-eras">Derived eras<a class="anchor" href="#derived-eras" aria-label="Link to this section">#</a></h2>
+
+<p>Computed rather than loaded: contiguous spans inferred from the event tables.</p>
+
+<p><code>drug_era</code>, <code>dose_era</code>, <code>condition_era</code></p>
+
+<h2 id="cohorts">Cohorts<a class="anchor" href="#cohorts" aria-label="Link to this section">#</a></h2>
+
+<p><code>cohort</code> holds subject entry and exit dates for a defined population;
+<code>cohort_definition</code> holds the definition itself. Populated by analytical tooling
+rather than by an extract process.</p>
+
+<h2 id="vocabulary">Vocabulary<a class="anchor" href="#vocabulary" aria-label="Link to this section">#</a></h2>
+
+<p>The terminology backbone. In a research deployment these are loaded from a standard
+vocabulary release; this repository ships only a small illustrative set.</p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Table</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>concept</code></td><td>Every concept, standard or not, with its domain and vocabulary</td></tr>
+    <tr><td><code>vocabulary</code></td><td>The code systems present, and their versions</td></tr>
+    <tr><td><code>domain</code></td><td>Which clinical domain a concept belongs to</td></tr>
+    <tr><td><code>concept_class</code></td><td>Classification within a vocabulary</td></tr>
+    <tr><td><code>concept_relationship</code></td><td>Typed relationships between concepts, including <code>Maps to</code></td></tr>
+    <tr><td><code>relationship</code></td><td>The relationship types themselves</td></tr>
+    <tr><td><code>concept_synonym</code></td><td>Alternative names, including other languages</td></tr>
+    <tr><td><code>concept_ancestor</code></td><td>Pre-computed hierarchy for descendant queries</td></tr>
+    <tr><td><code>source_to_concept_map</code></td><td>Legacy source-code mapping table</td></tr>
+    <tr><td><code>drug_strength</code></td><td>Ingredient strengths for drug concepts</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="metadata">Metadata<a class="anchor" href="#metadata" aria-label="Link to this section">#</a></h2>
+
+<p><code>cdm_source</code> describes the deployed instance and the model version;
+<code>metadata</code> holds arbitrary key-value annotations. EMOP adds
+<code>emop_cdm_source</code> alongside these rather than modifying either.</p>
+
+<h2 id="counting">Counting<a class="anchor" href="#counting" aria-label="Link to this section">#</a></h2>
+
+<p>Thirty-nine core tables plus thirteen Egyptian tables give fifty-two, which is what a
+verified installation reports:</p>
+
+<pre><code>select count(*) from information_schema.tables where table_schema = 'emop';
+<span class="c">-- 52</span></code></pre><nav class="pager"><a class="prev" href="/emop/extension/"><span class="dir">Previous</span><span class="ttl">Egyptian tables</span></a><a class="next" href="/emop/vocabularies/"><span class="dir">Next</span><span class="ttl">Reference data</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#clinical-events">Clinical events</a></li>
+<li><a href="#health-system">Health system</a></li>
+<li><a href="#economics">Economics</a></li>
+<li><a href="#derived-eras">Derived eras</a></li>
+<li><a href="#cohorts">Cohorts</a></li>
+<li><a href="#vocabulary">Vocabulary</a></li>
+<li><a href="#metadata">Metadata</a></li>
+<li><a href="#counting">Counting</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Core model courtesy of the OHDSI community</p>
+  </div>
+</footer>
+</body>
+</html>

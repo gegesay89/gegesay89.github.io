@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mention context — COE</title>
+<meta name="description" content="How COE separates affirmed, negated, family-history, and historical mentions, including precedence, scope rules, and stated limits.">
+<link rel="canonical" href="https://gegesay89.github.io/coe/mention-context/">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="wordmark" href="/"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="4" fill="none" stroke="#0f5d6e" stroke-width="1.7"/><path d="M5.5 12.5 L8 7.5 L10.5 12.5 L14.5 7.5" fill="none" stroke="#0f5d6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gehad Sayed Ahmed</span></a>
+    <nav class="topnav">
+      <a href="/">Overview</a>
+      <a href="/emop/">EMOP</a>
+      <a href="/coe/" class="on">COE</a>
+      <a href="https://github.com/gegesay89">GitHub</a>
+    </nav>
+  </div>
+</header>
+<div class="shell"><aside class="sidebar">
+<span class="project-badge">Software</span>
+<a class="project-name" href="/coe/">COE</a>
+<div class="nav-group">
+<h4>Introduction</h4><ul>
+<li><a href="/coe/">Overview</a></li>
+<li><a href="/coe/concepts/">How it works</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Reference</h4><ul>
+<li><a href="/coe/mention-context/" aria-current="page">Mention context</a></li>
+<li><a href="/coe/matching/">Phrase matching</a></li>
+<li><a href="/coe/outputs/">Outputs</a></li>
+</ul></div>
+<div class="nav-group">
+<h4>Operating COE</h4><ul>
+<li><a href="/coe/quickstart/">Quickstart</a></li>
+<li><a href="/coe/privacy/">Privacy controls</a></li>
+<li><a href="/coe/curation/">Curation</a></li>
+<li><a href="/coe/cli/">Command reference</a></li>
+</ul></div>
+</aside><main><nav class="crumbs"><a href="/">Overview</a><span>/</span><a href="/coe/">COE</a><span>/</span>Mention context</nav><h1>Mention context</h1><p class="standfirst">Every mention receives exactly one context label, so counts partition cleanly and a ruled-out diagnosis is never reported as a current finding.</p><h2 id="the-four-labels">The four labels<a class="anchor" href="#the-four-labels" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table>
+  <thead><tr><th>Label</th><th>Meaning</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>current_clinical</code></td>
+      <td>Affirmed, about the patient, present — the clinical default</td>
+      <td>"Patient reports fever"</td>
+    </tr>
+    <tr>
+      <td><code>negated</code></td>
+      <td>The text asserts the concept is absent</td>
+      <td>"No evidence of fever", "denies chest pain", "ruled out"</td>
+    </tr>
+    <tr>
+      <td><code>non_patient</code></td>
+      <td>The mention belongs to a family member or other person</td>
+      <td>"Family history of diabetes", "mother had breast cancer"</td>
+    </tr>
+    <tr>
+      <td><code>historical</code></td>
+      <td>The patient's past rather than the present</td>
+      <td>"History of stroke", "status post appendectomy", "prior heart attack"</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>Exactly one label per mention. Because they partition, affirmed, negated, family, and
+historical counts for a code sum to its total mentions — so a suspiciously high count can be
+decomposed instead of merely doubted.</p>
+
+<h2 id="precedence">Precedence<a class="anchor" href="#precedence" aria-label="Link to this section">#</a></h2>
+
+<p>When more than one rule could apply, the order is:</p>
+
+<pre><code>negated &gt; non_patient &gt; historical &gt; current_clinical</code></pre>
+
+<p>The reasoning is that the strongest claim wins. "No family history of diabetes" is, first and
+foremost, not an assertion about the patient — labelling it family-history would leave it
+counted as evidence that someone had diabetes. Negation is therefore checked first.</p>
+
+<h2 id="scope">Scope<a class="anchor" href="#scope" aria-label="Link to this section">#</a></h2>
+
+<p>Three mechanisms bound how far a trigger reaches:</p>
+
+<h3>Sentence and distance</h3>
+
+<p>A trigger applies within its sentence and within a bounded number of words. A negation early
+in a long sentence does not silently negate a clause far away from it.</p>
+
+<h3>Scope-breaking conjunctions</h3>
+
+<p>Certain conjunctions end a trigger's reach:</p>
+
+<pre><code>"no fever <strong>but</strong> reports cough"
+<span class="c">   fever -> negated</span>
+<span class="c">   cough -> current_clinical</span></code></pre>
+
+<p>Without this rule the cough would inherit the negation and disappear from the affirmed
+counts.</p>
+
+<h3>Section headers</h3>
+
+<p>Record headers scope the block beneath them until a header that resets the context appears.
+A code mentioned under <em>Family History:</em> is treated as belonging to a relative until, say,
+<em>Assessment:</em> resets the scope. This matters because within such a block the individual
+sentences often carry no trigger word at all.</p>
+
+<h2 id="stated-limits">Stated limits<a class="anchor" href="#stated-limits" aria-label="Link to this section">#</a></h2>
+
+<div class="caution">
+  <span class="label">This is a screen, not a parser</span>
+  <p>The rules are a conservative screen over text. They cannot resolve nested scope or
+  long-range dependency, so <code>current_clinical</code> remains lexical evidence rather than a
+  confirmed clinical finding. Treat an affirmed count as a well-filtered starting point for
+  review, not as a diagnosis rate.</p>
+</div>
+
+<p>Concretely, the following are not handled reliably: negation spanning more than one sentence;
+hypothetical and conditional framing ("if the fever returns"); uncertainty ("possible
+pneumonia"), which is not currently a separate label; and attribution to a third party who is
+not a family member.</p>
+
+<h2 id="why-it-changes-the-numbers">Why it changes the numbers<a class="anchor" href="#why-it-changes-the-numbers" aria-label="Link to this section">#</a></h2>
+
+<p>Consider one sentence: <em>"Prior heart attack, no current chest pain, family history of
+diabetes."</em></p>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Concept</th><th>Naive count</th><th>With context</th></tr></thead>
+  <tbody>
+    <tr><td>Myocardial infarction</td><td>1 current</td><td>1 <code>historical</code></td></tr>
+    <tr><td>Chest pain</td><td>1 current</td><td>1 <code>negated</code></td></tr>
+    <tr><td>Diabetes</td><td>1 current</td><td>1 <code>non_patient</code></td></tr>
+  </tbody>
+</table></div>
+
+<p>A naive counter reports three current findings. All three are wrong, and none of them looks
+wrong in a summary table.</p>
+
+<h2 id="effect-on-published-synonyms">Effect on published synonyms<a class="anchor" href="#effect-on-published-synonyms" aria-label="Link to this section">#</a></h2>
+
+<p>Only affirmed surface forms become published labels in a concept-scheme export. A term seen
+solely in negated or family context is evidence about how the corpus is written, not a synonym
+worth asserting about the concept — so it is retained in the context breakdown and excluded
+from the exported labels.</p><nav class="pager"><a class="prev" href="/coe/concepts/"><span class="dir">Previous</span><span class="ttl">How it works</span></a><a class="next" href="/coe/matching/"><span class="dir">Next</span><span class="ttl">Phrase matching</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#the-four-labels">The four labels</a></li>
+<li><a href="#precedence">Precedence</a></li>
+<li><a href="#scope">Scope</a></li>
+<li><a href="#stated-limits">Stated limits</a></li>
+<li><a href="#why-it-changes-the-numbers">Why it changes the numbers</a></li>
+<li><a href="#effect-on-published-synonyms">Effect on published synonyms</a></li>
+</ul></aside></div>
+<footer class="foot">
+  <div class="foot-inner">
+    <p>Gehad Sayed Ahmed</p>
+    <p>Apache License 2.0</p>
+  </div>
+</footer>
+</body>
+</html>
