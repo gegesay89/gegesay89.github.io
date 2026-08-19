@@ -246,7 +246,7 @@ keys, since several of these tables reference core tables.</p>
 <p>One row per identifier held by a person, so a patient with a national identity number and
 a passport has two rows rather than one overloaded field.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>national_identifier_id</code></td><td>integer</td><td>Primary key</td></tr>
@@ -273,7 +273,7 @@ a passport has two rows rather than one overloaded field.</p>
 <p>One optional row per person. The international core has no name columns by design; this
 table exists for operational systems that must reproduce a legal name.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>person_id</code></td><td>integer</td><td>Primary key, references <code>person</code></td></tr>
@@ -290,7 +290,7 @@ table exists for operational systems that must reproduce a legal name.</p>
 <p>All twenty-seven governorates, each with both name forms, an international subdivision
 code, and a regional grouping for aggregate reporting.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>governorate_id</code></td><td>integer</td><td>Primary key</td></tr>
@@ -309,7 +309,7 @@ code, and a regional grouping for aggregate reporting.</p>
 that matters most analytically, because funding and referral behaviour differ sharply between
 sectors.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>care_site_id</code></td><td>integer</td><td>Primary key and foreign key to <code>care_site</code></td></tr>
@@ -326,9 +326,23 @@ sectors.</p>
 
 <h3>insurance_scheme</h3>
 
-<p>The payer organisations, named rather than numbered. Organisation names are public, so
-these rows are not flagged illustrative; what is <em>not</em> included is any benefit
-schedule or tariff.</p>
+<p>The payer organisations, named rather than numbered. Organisation names are public, so these
+rows are not flagged illustrative; what is <em>not</em> included is any benefit schedule or
+tariff.</p>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>insurance_scheme_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>scheme_code</code></td><td>varchar(32)</td><td>Unique; see the codes below</td></tr>
+    <tr><td><code>scheme_name_en</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>scheme_name_ar</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>scheme_type</code></td><td>varchar(32)</td><td><code>social</code>, <code>military</code>, <code>private</code>, <code>out_of_pocket</code></td></tr>
+    <tr><td><code>example_not_official</code></td><td>boolean</td><td>False for the shipped organisation rows</td></tr>
+  </tbody>
+</table></div>
+
+<p>The six rows shipped in the reference data:</p>
 
 <div class="tw"><table class="tight">
   <thead><tr><th>Code</th><th>Organisation</th><th>Type</th></tr></thead>
@@ -342,16 +356,12 @@ schedule or tariff.</p>
   </tbody>
 </table></div>
 
-<p>Columns are <code>insurance_scheme_id</code>, <code>scheme_code</code> (unique),
-<code>scheme_name_en</code>, <code>scheme_name_ar</code>, <code>scheme_type</code>, and
-<code>example_not_official</code>.</p>
-
 <h3>person_insurance</h3>
 
 <p>Coverage intervals. Two schemes overlapping in time is a legitimate state, not an error —
 supplementary private cover alongside a public scheme is common.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>person_insurance_id</code></td><td>integer</td><td>Primary key</td></tr>
@@ -368,16 +378,25 @@ supplementary private cover alongside a public scheme is common.</p>
 
 <h3>care_sector</h3>
 
-<p>Four values — <code>CIVIL</code>, <code>MILITARY</code>, <code>POLICE</code>,
-<code>UNIVERSITY</code> — with both name forms. Kept as a table rather than a text column so
-that a visit can reference it by key.</p>
+<p>Four fixed values, kept as a table rather than a text column so a visit can reference one by
+key.</p>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>care_sector_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>sector_code</code></td><td>varchar(32)</td><td><code>CIVIL</code>, <code>MILITARY</code>, <code>POLICE</code>, <code>UNIVERSITY</code>; unique</td></tr>
+    <tr><td><code>sector_name_en</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>sector_name_ar</code></td><td>varchar(255)</td><td>Required</td></tr>
+  </tbody>
+</table></div>
 
 <h3>referral</h3>
 
 <p>A referral is recorded as an event in its own right, which makes an incomplete referral
 visible: a row with no subsequent visit at the destination is a patient who did not arrive.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>referral_id</code></td><td>integer</td><td>Primary key</td></tr>
@@ -399,7 +418,7 @@ visible: a row with no subsequent visit at the destination is a patient who did 
 what makes questions like <em>which sector treated publicly insured patients referred
 urgently</em> a join rather than an inference.</p>
 
-<div class="tw"><table>
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>visit_occurrence_id</code></td><td>integer</td><td>Primary key and foreign key to <code>visit_occurrence</code></td></tr>
@@ -418,15 +437,24 @@ the working area used before — or instead of — loading a licensed vocabulary
 
 <h3>source_vocabulary</h3>
 
-<p><code>source_vocabulary_id</code>, <code>vocabulary_code</code> (unique),
-<code>vocabulary_name_en</code>, <code>vocabulary_name_ar</code>, and
-<code>official_status</code>, which defaults to <code>example_not_official</code> and records
-whether a system is a real published release, an illustrative one, or a real code set carrying
-illustrative labels.</p>
+<p>One row per named national code system.</p>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>source_vocabulary_id</code></td><td>integer</td><td>Primary key</td></tr>
+    <tr><td><code>vocabulary_code</code></td><td>varchar(64)</td><td>Short code, unique</td></tr>
+    <tr><td><code>vocabulary_name_en</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>vocabulary_name_ar</code></td><td>varchar(255)</td><td>Required</td></tr>
+    <tr><td><code>official_status</code></td><td>varchar(64)</td><td>Defaults <code>example_not_official</code>. Records whether the system is a published release, an illustrative one, or real codes carrying illustrative labels</td></tr>
+  </tbody>
+</table></div>
 
 <h3>source_code</h3>
 
-<div class="tw"><table>
+<p>One row per code within a system, with both label forms required.</p>
+
+<div class="tw"><table class="cols">
   <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
   <tbody>
     <tr><td><code>source_code_id</code></td><td>integer</td><td>Primary key</td></tr>
@@ -441,19 +469,37 @@ illustrative labels.</p>
 
 <h3>source_code_omop_map</h3>
 
-<p>Composite primary key over <code>source_code_id</code>, <code>concept_id</code>, and
-<code>relationship_id</code>, so one source code can carry more than one relationship.
-<code>relationship_id</code> defaults to <code>Maps to</code>, matching the standard
-convention.</p>
+<p>Maps a national code onto a standard concept. The composite primary key allows one source
+code to carry more than one relationship.</p>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>source_code_id</code></td><td>integer</td><td>Part of the primary key; references <code>source_code</code></td></tr>
+    <tr><td><code>concept_id</code></td><td>integer</td><td>Part of the primary key; references <code>concept</code></td></tr>
+    <tr><td><code>relationship_id</code></td><td>varchar(20)</td><td>Part of the primary key; defaults <code>Maps to</code></td></tr>
+    <tr><td><code>valid_start_date</code></td><td>date</td><td>Required</td></tr>
+    <tr><td><code>valid_end_date</code></td><td>date</td><td>Null while current</td></tr>
+  </tbody>
+</table></div>
 
 <h2>Metadata</h2>
 
 <h3>emop_cdm_source</h3>
 
-<p><code>emop_cdm_source_name</code>, <code>emop_cdm_version</code>,
-<code>omop_cdm_version</code>, <code>emop_release_date</code>, and a free-text
-<code>comment</code>. Populated once per deployment so a database can report which version of
-the model produced it.</p>
+<p>Populated once per deployment, so a database can report which version of the model produced
+it without reference to external documentation.</p>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>emop_cdm_source_name</code></td><td>varchar(255)</td><td>Name of the deployment</td></tr>
+    <tr><td><code>emop_cdm_version</code></td><td>varchar(32)</td><td>EMOP version, for example <code>0.1.0</code></td></tr>
+    <tr><td><code>omop_cdm_version</code></td><td>varchar(32)</td><td>Core version it was built against</td></tr>
+    <tr><td><code>emop_release_date</code></td><td>date</td><td>Required</td></tr>
+    <tr><td><code>comment</code></td><td>varchar(1024)</td><td>Free text</td></tr>
+  </tbody>
+</table></div>
 
 <h2>Indexes</h2>
 

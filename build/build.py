@@ -78,6 +78,7 @@ def sidebar(project_key: str, slug: str) -> str:
         '<aside class="sidebar">',
         f'<span class="project-badge">{project["badge"]}</span>',
         f'<a class="project-name" href="{project["root"]}">{project["name"]}</a>',
+        '<div class="nav-groups">',
     ]
     for group_title, entries in project["sections"]:
         out.append('<div class="nav-group">')
@@ -87,7 +88,7 @@ def sidebar(project_key: str, slug: str) -> str:
             current = ' aria-current="page"' if entry_slug == slug else ""
             out.append(f'<li><a href="{href}"{current}>{label}</a></li>')
         out.append("</ul></div>")
-    out.append("</aside>")
+    out.append("</div></aside>")
     return "\n".join(out)
 
 
@@ -169,6 +170,7 @@ def page_shell(*, title: str, description: str, canonical: str, active: str, bod
 {topbar(active)}
 {body}
 {foot}
+<script src="/assets/docs.js" defer></script>
 </body>
 </html>
 """
@@ -226,13 +228,15 @@ def build_doc_pages() -> list[pathlib.Path]:
 HOME_BODY = """
 <div class="shell plain">
   <div class="masthead">
-    <span class="eyebrow">Open source</span>
-    <h1>Health data standards and clinical text tooling.</h1>
-    <p>Two independent projects, documented in full and published under the Apache License 2.0:
-    a relational data model for observational health records collected in Egypt, and a
-    deterministic system for analysing clinical text against controlled terminologies.</p>
-    <a class="cta" href="/emop/">Read the EMOP documentation</a>
-    <a class="cta ghost" href="/coe/">Read the COE documentation</a>
+    <div class="measure">
+      <span class="eyebrow">Open source</span>
+      <h1>Health data standards and clinical text tooling.</h1>
+      <p>Two independent projects, documented in full and published under the Apache License 2.0:
+      a relational data model for observational health records collected in Egypt, and a
+      deterministic system for analysing clinical text against controlled terminologies.</p>
+      <a class="cta" href="/emop/">Read the EMOP documentation</a>
+      <a class="cta ghost" href="/coe/">Read the COE documentation</a>
+    </div>
   </div>
 
   <section class="band">
@@ -269,8 +273,9 @@ HOME_BODY = """
   <section class="band">
     <h2>Principles</h2>
     <div class="tw"><table class="tight">
+      <thead><tr><th style="width:14rem">Principle</th><th>In practice</th></tr></thead>
       <tbody>
-        <tr><td style="width:13rem"><strong>Build on standards</strong></td>
+        <tr><td><strong>Build on standards</strong></td>
             <td>Both projects extend established specifications rather than replacing them, and
             state precisely where and why they diverge.</td></tr>
         <tr><td><strong>Declare provenance</strong></td>
@@ -291,12 +296,14 @@ HOME_BODY = """
 NOT_FOUND_BODY = """
 <div class="shell plain">
   <div class="masthead">
-    <span class="eyebrow">Error 404</span>
-    <h1>That page does not exist.</h1>
-    <p>The address may be mistyped, or the page may have moved. The two documentation
-    sections below are the best place to start.</p>
-    <a class="cta" href="/emop/">EMOP documentation</a>
-    <a class="cta ghost" href="/coe/">COE documentation</a>
+    <div class="measure">
+      <span class="eyebrow">Error 404</span>
+      <h1>That page does not exist.</h1>
+      <p>The address may be mistyped, or the page may have moved. The two documentation
+      sections below are the best place to start.</p>
+      <a class="cta" href="/emop/">EMOP documentation</a>
+      <a class="cta ghost" href="/coe/">COE documentation</a>
+    </div>
   </div>
 </div>
 """
