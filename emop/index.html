@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EMOP — Egyptian Medical Observational Profile</title>
+  <meta name="description" content="EMOP is an Egyptian profile of the OMOP Common Data Model. Core tables keep OMOP 5.4 names. Extra tables cover Egyptian care.">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">CareNova</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/emop/" aria-current="page">EMOP</a>
+        <a href="/coe/">COE</a>
+      </nav>
+    </header>
+
+    <p class="kicker">Data model · v0.1</p>
+    <h1>EMOP</h1>
+    <p class="ar-title" lang="ar" dir="rtl">النموذج المصري للبيانات الطبية الرصدية</p>
+    <p class="lede">An Egyptian profile of the Observational Medical Outcomes Partnership common data model. The core keeps OMOP 5.4 names. Egypt is modelled as extra tables, not as renamed OMOP tables.</p>
+
+    <div class="links">
+      <a href="https://github.com/gegesay89/emop">GitHub repository</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/tables.md">Table list</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/docs/crosswalk-omop.md">Crosswalk to OMOP</a>
+      <a href="https://github.com/gegesay89/emop/blob/main/LICENSE">Apache 2.0</a>
+    </div>
+
+    <div class="warn">
+      Example clinical and tariff codes in the repository use an <code>EX-</code> prefix. They are not official Ministry of Health, UHIA, or HIO codes. Governorate codes are ISO 3166-2:EG.
+    </div>
+
+    <h2>Core, unchanged</h2>
+    <p><code>PERSON</code>, <code>VISIT_OCCURRENCE</code>, <code>CONDITION_OCCURRENCE</code>, <code>DRUG_EXPOSURE</code>, and the rest of OMOP 5.4 sit in schema <code>emop</code> with their original columns. That layout is OHDSI’s, vendored under Apache 2.0.</p>
+
+    <h2>Egyptian tables</h2>
+    <table>
+      <thead>
+        <tr><th>Table</th><th>What it holds</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>governorate</code></td><td>27 governorates, Arabic and English, ISO codes</td></tr>
+        <tr><td><code>national_identifier</code></td><td>National ID, passport, military ID</td></tr>
+        <tr><td><code>facility_extension</code></td><td>Sector, Ministry facility code, teaching flag</td></tr>
+        <tr><td><code>insurance_scheme</code> / <code>person_insurance</code></td><td>UHIA, HIO, armed forces, police, private, out of pocket</td></tr>
+        <tr><td><code>care_sector</code> / <code>visit_care_context</code></td><td>Civil versus military care on the visit</td></tr>
+        <tr><td><code>referral</code></td><td>From facility, to facility, priority</td></tr>
+        <tr><td><code>person_name_bilingual</code></td><td>Arabic and English names</td></tr>
+        <tr><td><code>source_code</code></td><td>National codes mapped into <code>CONCEPT</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Install</h2>
+    <p>PostgreSQL 14 or newer. Clone the repository and run <code>./ddl/install.sh</code>. Instructions and the Athena caveat are in the repository README.</p>
+
+    <footer>
+      <p>Gehad Sayed Ahmed. OMOP CDM copyright OHDSI. Egyptian extension tables copyright 2026 Gehad Sayed Ahmed.</p>
+    </footer>
+  </div>
+</body>
+</html>

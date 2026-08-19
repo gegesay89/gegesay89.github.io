@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>COE — Corpus Ontology Enricher</title>
+  <meta name="description" content="COE is an offline corpus ontology enricher. Public code and a synthetic demo; licensed terminology indexes stay out of git.">
+  <link rel="stylesheet" href="/assets/site.css">
+  <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">CareNova</a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/emop/">EMOP</a>
+        <a href="/coe/" aria-current="page">COE</a>
+      </nav>
+    </header>
+
+    <p class="kicker">Software · v0.4 alpha</p>
+    <h1>COE</h1>
+    <p class="ar-title">Corpus Ontology Enricher</p>
+    <p class="lede">An offline system that reads a clinical-text snapshot, matches phrases to pinned terminology releases, and writes coding counts, mention context, unmapped terms, and co-occurrence rows. It is not a publication system and not a clinical decision system.</p>
+
+    <div class="links">
+      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher">GitHub repository</a>
+      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher/blob/main/README.md">Install and demo</a>
+      <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher/blob/main/LICENSE">Apache 2.0</a>
+    </div>
+
+    <div class="warn">
+      Licensed terminology payloads (SNOMED, CPT, RxNorm, and the rest) are not in the public repository. The public tree is code, schemas, and a PHI-free synthetic demo. Build private indexes on a machine that already holds the licensed files.
+    </div>
+
+    <h2>What a run produces</h2>
+    <p>Mention context is split so a negated or family-history mention is not counted as a current finding: <code>current_clinical</code>, <code>negated</code>, <code>non_patient</code>, <code>historical</code>.</p>
+    <p>Matching is exact-first with a small set of deterministic variants. Every emitted code must exist in the pinned release.</p>
+
+    <h2>Synthetic demo</h2>
+    <p>Python 3.11 or newer, and <code>uv</code>:</p>
+    <pre style="white-space:pre-wrap;background:var(--card);padding:0.8rem 1rem;border:1px solid #d9c7a5;">uv sync --extra dev
+uv run coe demo create demo
+uv run pytest</pre>
+
+    <footer>
+      <p>Gehad Sayed Ahmed. Candidate evidence is not acceptance. Coding counts are lexical evidence, not clinical prevalence.</p>
+    </footer>
+  </div>
+</body>
+</html>
