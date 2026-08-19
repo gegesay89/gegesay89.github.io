@@ -94,7 +94,7 @@
   <div class="wrap">
     <h2>Example data</h2>
     <div class="notice">
-      <strong>Illustrative codes only.</strong> Every invented clinical or tariff code in this release is prefixed <code>EX-</code> and flagged in the data. None of it comes from the Ministry of Health, the Universal Health Insurance Authority, or the Health Insurance Organization. Governorate codes are the ISO geographic standard, not a clinical terminology.
+      <strong>Illustrative codes only.</strong> Invented clinical and tariff codes in this release are prefixed <code>EX-</code> and flagged in the data. None of it comes from the Ministry of Health, the Universal Health Insurance Authority, or the Health Insurance Organization. Governorate codes are the ISO geographic standard, and two diagnosis rows carry real international codes with illustrative translations — both are flagged separately so the distinction is visible in the data itself.
     </div>
     <h3>What ships</h3>
     <ul class="plain">
@@ -113,8 +113,8 @@
 cd emop
 createdb emop
 ./ddl/install.sh postgres://localhost/emop
-psql postgres://localhost/emop -f vocabulary/load_examples.sql
-psql postgres://localhost/emop -f examples/toy_egypt.sql</code></pre>
+psql postgres://localhost/emop -v ON_ERROR_STOP=1 -f vocabulary/load_examples.sql
+psql postgres://localhost/emop -v ON_ERROR_STOP=1 -f examples/toy_egypt.sql</code></pre>
     <p class="muted">This produces 52 tables and 194 foreign keys. Applying the international foreign-key and index files is covered in the repository, including the order to follow when loading a full standard vocabulary.</p>
   </div>
 </section>
