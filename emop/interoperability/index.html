@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Interoperability mapping — EMOP</title>
-<meta name="description" content="How EMOP tables correspond to interoperability resources for exchanging records between systems.">
+<title>Interoperability — EMOP</title>
+<meta name="description" content="FHIR R4 terminology resources shipped with EMOP, and element-level guidance for exchanging Egyptian records between systems.">
 <link rel="canonical" href="https://gegesay89.github.io/emop/interoperability/">
 <link rel="stylesheet" href="/assets/docs.css">
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
@@ -41,15 +41,48 @@
 <li><a href="/emop/crosswalk/">International research</a></li>
 <li><a href="/emop/interoperability/" aria-current="page">Interoperability</a></li>
 </ul></div>
-</div></aside><main><nav class="crumbs"><a href="/emop/">EMOP</a><span>/</span>Interoperability</nav><h1>Interoperability mapping</h1><p class="standfirst">A resource-by-resource correspondence for exchanging EMOP records between systems. This is a mapping note, not a published implementation guide.</p><p>EMOP is a model for storing and analysing records. Exchange standards address a different
-problem: moving one patient's data between systems. The two are complementary, and the mapping
-below is the practical bridge. Resource names follow the widely used release 4.</p>
+</div></aside><main><nav class="crumbs"><a href="/emop/">EMOP</a><span>/</span>Interoperability</nav><h1>Interoperability</h1><p class="standfirst">Ten FHIR R4 resources ship with EMOP: code systems for the governorates, payers, care sectors and identifier types, a value set for each, and a map from national codes to standard concepts.</p><p>EMOP is a model for storing and analysing records. Exchange standards address a different
+problem: moving one patient's data between systems. The two are complementary, and this page is
+the bridge — a loadable terminology package plus guidance for the elements where a generic
+mapping is not enough.</p>
+
+<h2 id="what-ships">What ships<a class="anchor" href="#what-ships" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table class="tight">
+  <thead><tr><th>Resource</th><th>Content</th></tr></thead>
+  <tbody>
+    <tr><td><code>CodeSystem</code> governorate</td><td>27 governorates, ISO 3166-2 codes, Arabic and English designations, regional grouping</td></tr>
+    <tr><td><code>CodeSystem</code> insurance scheme</td><td>6 payer organisations with scheme type</td></tr>
+    <tr><td><code>CodeSystem</code> care sector</td><td>Civil, military, police, university</td></tr>
+    <tr><td><code>CodeSystem</code> identifier type</td><td>National identity number, passport, military, refugee</td></tr>
+    <tr><td><code>ValueSet</code> &times; 4</td><td>One per code system, for binding an element</td></tr>
+    <tr><td><code>ConceptMap</code></td><td>7 national codes to standard concepts, each carrying its official status</td></tr>
+    <tr><td><code>Bundle</code></td><td>All of the above as one collection</td></tr>
+  </tbody>
+</table></div>
+
+<p>All ten validate against the official FHIR R4 JSON schema. Resource names follow R4, and
+every resource is marked draft and experimental.</p>
+
+<h3>Loading</h3>
+
+<pre><code>curl -X POST -H 'Content-Type: application/fhir+json' \
+  --data-binary @fhir/Bundle-emop-terminology.json \
+  https://your-fhir-server/fhir</code></pre>
+
+<h3>Generated, not hand-written</h3>
+
+<p>The resources are derived from the same SQL that populates the database, so a published code
+cannot drift from the stored one:</p>
+
+<pre><code>python3 fhir/build_terminology.py</code></pre>
 
 <div class="note">
-  <span class="label">Scope</span>
-  <p>This is a table-level correspondence, deliberately stopping short of publishing executable
-  structure maps or profiles. Version 0.1 does not claim to be an implementation guide, because
-  a guide implies conformance rules and a test suite that do not yet exist.</p>
+  <span class="label">Status of the content</span>
+  <p>Governorates, payer organisation names, care sectors and identifier types are genuinely
+  published and usable as they stand. The clinical and tariff codes in the concept map are
+  illustrative: codes prefixed <code>EX-</code> are issued by no Egyptian authority, and each
+  mapping says so in its own comment. No benefit schedule or tariff is included anywhere.</p>
 </div>
 
 <h2 id="resource-correspondence">Resource correspondence<a class="anchor" href="#resource-correspondence" aria-label="Link to this section">#</a></h2>
@@ -60,18 +93,15 @@ below is the practical bridge. Resource names follow the widely used release 4.<
     <tr><td><code>Patient</code></td><td><code>person</code> + <code>person_name_bilingual</code></td>
         <td>Demographics from the core; names from the extension</td></tr>
     <tr><td><code>Patient.identifier</code></td><td><code>national_identifier</code></td>
-        <td>One entry per row. Identifier type maps to the identifier system</td></tr>
+        <td>One entry per row</td></tr>
     <tr><td><code>Patient.address</code></td><td><code>location</code>, <code>governorate</code></td>
         <td>Governorate is the meaningful administrative level</td></tr>
     <tr><td><code>Encounter</code></td><td><code>visit_occurrence</code> + <code>visit_care_context</code></td>
         <td>Class from the visit concept; sector and payer from the context row</td></tr>
-    <tr><td><code>Encounter</code> referral fields</td><td><code>referral</code></td>
-        <td>Priority maps to the encounter priority</td></tr>
     <tr><td><code>Condition</code></td><td><code>condition_occurrence</code></td><td>Direct</td></tr>
     <tr><td><code>MedicationRequest</code>, <code>MedicationStatement</code></td>
         <td><code>drug_exposure</code></td>
-        <td>Which resource applies depends on whether the row records an order or an
-        administration</td></tr>
+        <td>Which resource applies depends on whether the row records an order or an administration</td></tr>
     <tr><td><code>Procedure</code></td><td><code>procedure_occurrence</code></td><td>Direct</td></tr>
     <tr><td><code>Observation</code></td><td><code>measurement</code>, <code>observation</code></td>
         <td>Measurements carry value and unit; observations may not</td></tr>
@@ -80,38 +110,98 @@ below is the practical bridge. Resource names follow the widely used release 4.<
     <tr><td><code>Practitioner</code></td><td><code>provider</code></td><td>Direct</td></tr>
     <tr><td><code>Coverage</code></td><td><code>person_insurance</code> + <code>insurance_scheme</code></td>
         <td>Period from the coverage row; payer from the scheme</td></tr>
-    <tr><td><code>Coverage.payor</code></td><td><code>insurance_scheme.scheme_code</code></td>
-        <td><code>UHIA</code>, <code>HIO</code>, <code>AFMS</code>, and so on</td></tr>
-    <tr><td>Coded values</td><td><code>source_code</code> → <code>source_code_omop_map</code> → <code>concept</code></td>
-        <td>Emit both the national code and the standard concept it maps to</td></tr>
   </tbody>
 </table></div>
 
-<h2 id="two-traps-worth-stating">Two traps worth stating<a class="anchor" href="#two-traps-worth-stating" aria-label="Link to this section">#</a></h2>
+<h2 id="identifiers">Identifiers<a class="anchor" href="#identifiers" aria-label="Link to this section">#</a></h2>
 
-<h3>Identity is not the primary key</h3>
+<p>One <code>Patient.identifier</code> entry per <code>national_identifier</code> row, so a
+patient holding a national identity number and a passport produces two entries rather than one
+overloaded field.</p>
 
-<p>A national identity number belongs in the identifier list, never in the resource id. The
-resource id is a system key, meaningless outside the server that issued it; the national
-identifier is a real-world identifier that must survive being moved between systems. Conflating
-them makes the record impossible to re-link correctly and leaks an identifier into every URL
-that references the patient.</p>
+<div class="tw"><table class="cols">
+  <thead><tr><th>Element</th><th>Source</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>identifier.type.coding.code</code></td><td><code>identifier_type</code></td><td>Bound to the identifier-type code system</td></tr>
+    <tr><td><code>identifier.value</code></td><td><code>identifier_source_value</code></td><td>The identifier as recorded</td></tr>
+    <tr><td><code>identifier.system</code></td><td>assigning authority</td><td>A URI naming the issuer, not the type</td></tr>
+    <tr><td><code>identifier.period.start</code></td><td><code>valid_start_date</code></td><td>Required</td></tr>
+    <tr><td><code>identifier.period.end</code></td><td><code>valid_end_date</code></td><td>Omit while current</td></tr>
+    <tr><td><code>identifier.use</code></td><td>derived</td><td><code>official</code> for the national identity number</td></tr>
+  </tbody>
+</table></div>
 
-<h3>Language is a property of the name, not the record</h3>
+<div class="caution">
+  <span class="label">Identity is not the primary key</span>
+  <p>A national identity number belongs in the identifier list, never in the resource id. The
+  resource id is a server key, meaningless outside the system that issued it; a national
+  identifier is a real-world identifier that must survive being moved between systems.
+  Conflating them makes re-linking unreliable and leaks the identifier into every URL that
+  references the patient.</p>
+</div>
 
-<p><code>person_name_bilingual.preferred_language</code> states which form to display, but a
-name resource can carry both. When the Arabic form is the legal name, mark it as the official
-use rather than dropping the Latin form — both are needed, for different purposes.</p>
+<h2 id="names">Names<a class="anchor" href="#names" aria-label="Link to this section">#</a></h2>
+
+<p>Both name forms live on one resource. <code>preferred_language</code> states which to display;
+it does not mean the other should be dropped. When the Arabic form is the legal name, mark it as
+the official use and keep the Latin form as an additional entry.</p>
+
+<h2 id="coverage">Coverage<a class="anchor" href="#coverage" aria-label="Link to this section">#</a></h2>
+
+<div class="tw"><table class="cols">
+  <thead><tr><th>Element</th><th>Source</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>Coverage.type.coding.code</code></td><td><code>scheme_code</code></td><td>Bound to the insurance-scheme code system</td></tr>
+    <tr><td><code>Coverage.payor</code></td><td><code>insurance_scheme</code></td><td>Reference an organisation</td></tr>
+    <tr><td><code>Coverage.period</code></td><td><code>coverage_start_date</code>, <code>coverage_end_date</code></td><td>Coverage interval</td></tr>
+    <tr><td><code>Coverage.subscriberId</code></td><td><code>subscriber_source_value</code></td><td>Membership reference</td></tr>
+    <tr><td><code>Coverage.beneficiary</code></td><td><code>person_id</code></td><td>Reference to the patient</td></tr>
+    <tr><td><code>Coverage.status</code></td><td>derived</td><td><code>active</code> while the end date is null</td></tr>
+  </tbody>
+</table></div>
+
+<p>Overlapping coverage is legitimate — supplementary private cover alongside a public scheme is
+common — so emit one coverage resource per row rather than collapsing them into one.</p>
+
+<h2 id="organisations-and-encounters">Organisations and encounters<a class="anchor" href="#organisations-and-encounters" aria-label="Link to this section">#</a></h2>
+
+<p>Facility sector maps to organisation type; the Ministry facility code becomes an organisation
+identifier; the governorate binds to the governorate code system. Referral priority maps to
+encounter priority.</p>
+
+<p>Two Egyptian facts have no standard element: care sector on a visit, and teaching status or
+urban and rural catchment on a facility. The honest options are an extension or a separate
+observation. Overloading organisation type or inventing a field on the encounter is not one of
+them.</p>
 
 <h2 id="coded-values-in-both-directions">Coded values in both directions<a class="anchor" href="#coded-values-in-both-directions" aria-label="Link to this section">#</a></h2>
 
-<p>When exporting a diagnosis, emit two codings on the same element: the national source code
-from <code>source_code</code>, and the standard concept reached through
-<code>source_code_omop_map</code>. The receiving system can then use whichever it understands
-without a lossy guess, and the mapping stays auditable.</p><nav class="pager"><a class="prev" href="/emop/crosswalk/"><span class="dir">Previous</span><span class="ttl">International research</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<p>When exporting a diagnosis or procedure, emit two codings on the same element: the national
+source code, and the standard concept it maps to. The receiving system uses whichever it
+understands, and the mapping stays auditable rather than being resolved by a lossy guess at the
+boundary.</p>
+
+<h2 id="why-no-conformance-profiles">Why no conformance profiles<a class="anchor" href="#why-no-conformance-profiles" aria-label="Link to this section">#</a></h2>
+
+<p>An implementation guide asserts conformance rules — which elements are mandatory, which
+bindings are required, what makes a payload valid. Egypt has no publicly codified national FHIR
+guide to align those rules to. Publishing profiles now would mean guessing at national
+requirements and presenting the guess as a standard, which is the same overreach as inventing
+official code lists — the practice
+<a href="/emop/data-model/">design principles</a> rules out.</p>
+
+<p>Terminology can be published honestly today, because the governorates, payer organisations,
+care sectors and identifier types are facts. Conformance rules are not yet. A later release can
+add profiles and structure maps once there is a national guide to conform to, or once an
+implementer states their constraints.</p><nav class="pager"><a class="prev" href="/emop/crosswalk/"><span class="dir">Previous</span><span class="ttl">International research</span></a></nav></main><aside class="toc"><h4>On this page</h4><ul>
+<li><a href="#what-ships">What ships</a></li>
 <li><a href="#resource-correspondence">Resource correspondence</a></li>
-<li><a href="#two-traps-worth-stating">Two traps worth stating</a></li>
+<li><a href="#identifiers">Identifiers</a></li>
+<li><a href="#names">Names</a></li>
+<li><a href="#coverage">Coverage</a></li>
+<li><a href="#organisations-and-encounters">Organisations and encounters</a></li>
 <li><a href="#coded-values-in-both-directions">Coded values in both directions</a></li>
+<li><a href="#why-no-conformance-profiles">Why no conformance profiles</a></li>
 </ul></aside></div>
 <footer class="foot">
   <div class="foot-inner">
