@@ -54,16 +54,15 @@ PROJECTS = {
 }
 
 
-def topbar(active: str) -> str:
+def topbar(active: str, home: str) -> str:
     def link(href: str, label: str, key: str) -> str:
         cls = ' class="on"' if key == active else ""
         return f'<a href="{href}"{cls}>{label}</a>'
 
     return f"""<header class="topbar">
   <div class="topbar-inner">
-    <a class="wordmark" href="/">{MARK}<span>{AUTHOR}</span></a>
+    <a class="wordmark" href="{home}">{MARK}<span>{AUTHOR}</span></a>
     <nav class="topnav">
-      {link("/", "Overview", "home")}
       {link("/emop/", "EMOP", "emop")}
       {link("/coe/", "COE", "coe")}
       <a href="https://github.com/gegesay89">GitHub</a>
@@ -155,7 +154,15 @@ def footer(extra: str) -> str:
 
 
 def page_shell(
-    *, title: str, description: str, canonical: str, active: str, body: str, foot: str, landing: bool = False
+    *,
+    title: str,
+    description: str,
+    canonical: str,
+    active: str,
+    body: str,
+    foot: str,
+    landing: bool = False,
+    home: str = "/emop/",
 ) -> str:
     body_class = ' class="landing"' if landing else ""
     return f"""<!DOCTYPE html>
@@ -170,7 +177,7 @@ def page_shell(
 <link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
 </head>
 <body{body_class}>
-{topbar(active)}
+{topbar(active, home)}
 {body}
 {foot}
 <script src="/assets/docs.js" defer></script>
@@ -194,10 +201,7 @@ def build_doc_pages() -> list[pathlib.Path]:
             contents = toc(headings)
             shell_class = "shell" if contents else "shell no-toc"
 
-            crumbs = (
-                '<nav class="crumbs"><a href="/">Overview</a><span>/</span>'
-                f'<a href="{project["root"]}">{project["name"]}</a>'
-            )
+            crumbs = f'<nav class="crumbs"><a href="{project["root"]}">{project["name"]}</a>'
             crumbs += "" if slug == "" else f'<span>/</span>{html.escape(spec["nav"])}'
             crumbs += "</nav>"
 
@@ -222,77 +226,12 @@ def build_doc_pages() -> list[pathlib.Path]:
                         active=key,
                         body=body,
                         foot=footer(project["footer"]),
+                        home=project["root"],
                     ),
                 )
             )
     return written
 
-
-HOME_BODY = """
-<div class="shell plain">
-  <div class="masthead">
-      <span class="eyebrow">Open source</span>
-      <h1>Health data standards and clinical text tooling.</h1>
-      <p>Two independent projects, documented in full and published under the Apache License 2.0:
-      a relational data model for observational health records collected in Egypt, and a
-      deterministic system for analysing clinical text against controlled terminologies.</p>
-      <a class="cta" href="/emop/">Read the EMOP documentation</a>
-      <a class="cta ghost" href="/coe/">Read the COE documentation</a>
-  </div>
-
-  <section class="band">
-    <h2>Projects</h2>
-    <div class="cardgrid">
-      <article class="card">
-        <h3>EMOP</h3>
-        <p class="sub">Egyptian Medical Observational Profile &middot; version 0.1</p>
-        <p>A PostgreSQL data model for observational health records in Egypt. Thirty-nine
-        international core tables carry the clinical record; thirteen additional tables carry
-        national identifiers, the twenty-seven governorates, public and military insurance,
-        referrals between facilities, bilingual names, and national code lists mapped to
-        standard concepts.</p>
-        <div class="links">
-          <a href="/emop/">Documentation</a>
-          <a href="https://github.com/gegesay89/emop">Repository</a>
-        </div>
-      </article>
-      <article class="card">
-        <h3>COE</h3>
-        <p class="sub">Corpus Ontology Enricher &middot; version 0.4 alpha</p>
-        <p>An offline system that matches phrases in clinical text to pinned terminology
-        releases and reports coding frequency, mention context, unmapped candidate terms, and
-        code co-occurrence. Suppression and scrubbing are applied before any row leaves the
-        process, and every result is bound to the exact inputs that produced it.</p>
-        <div class="links">
-          <a href="/coe/">Documentation</a>
-          <a href="https://github.com/gegesay89/coe-corpus-ontology-enricher">Repository</a>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="band">
-    <h2>Principles</h2>
-    <div class="tw"><table class="tight">
-      <thead><tr><th style="width:14rem">Principle</th><th>In practice</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Build on standards</strong></td>
-            <td>Both projects extend established specifications rather than replacing them, and
-            state precisely where and why they diverge.</td></tr>
-        <tr><td><strong>Declare provenance</strong></td>
-            <td>Every code carries its source and its status. Illustrative content is labelled
-            in the data itself, never presented as an official release.</td></tr>
-        <tr><td><strong>Stay reproducible</strong></td>
-            <td>Deterministic execution with no network dependency. Results can be rebuilt from
-            pinned inputs and verified against them afterwards.</td></tr>
-        <tr><td><strong>Protect by construction</strong></td>
-            <td>No patient data in either repository. Licensed terminology payloads are never
-            committed to public source control.</td></tr>
-      </tbody>
-    </table></div>
-  </section>
-</div>
-"""
 
 NOT_FOUND_BODY = """
 <div class="shell plain">
@@ -307,31 +246,42 @@ NOT_FOUND_BODY = """
 </div>
 """
 
+# The root URL has to resolve to something, but there is no overview page: it
+# forwards straight to EMOP. Redirect happens in the markup so it works on
+# static hosting with no server rules.
+ROOT_REDIRECT = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{AUTHOR}</title>
+<link rel="canonical" href="{BASE}/emop/">
+<meta http-equiv="refresh" content="0; url=/emop/">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<script>location.replace("/emop/");</script>
+</head>
+<body class="landing">
+<div class="shell plain">
+  <div class="masthead">
+    <h1>Documentation</h1>
+    <p>Continue to <a href="/emop/">EMOP</a> or <a href="/coe/">COE</a>.</p>
+  </div>
+</div>
+</body>
+</html>
+"""
+
 
 def build_static() -> list[pathlib.Path]:
-    written = [
-        write(
-            "",
-            page_shell(
-                title=f"{AUTHOR} — Health data standards and clinical text tooling",
-                description=(
-                    "Open-source health data standards and clinical text tooling: EMOP, a data "
-                    "model for Egyptian observational health records, and COE, a corpus "
-                    "ontology enricher."
-                ),
-                canonical=f"{BASE}/",
-                active="home",
-                body=HOME_BODY,
-                foot=footer('Apache License 2.0 · <a href="https://github.com/gegesay89">github.com/gegesay89</a>'),
-                landing=True,
-            ),
-        )
-    ]
+    (ROOT / "index.html").write_text(ROOT_REDIRECT, encoding="utf-8")
+    written = [ROOT / "index.html"]
     not_found = page_shell(
         title="Page not found",
         description="The requested page does not exist.",
         canonical=f"{BASE}/404.html",
-        active="home",
+        active="none",
         body=NOT_FOUND_BODY,
         foot=footer("Apache License 2.0"),
         landing=True,
